@@ -1,6 +1,6 @@
 package scheduler
 
-class Dependency(_dependencyType: Dependency.Type) {
+case class Dependency(private val _dependencyType: Dependency.Type) {
 	def dependencyType = _dependencyType
 }
 
