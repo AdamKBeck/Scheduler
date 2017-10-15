@@ -8,3 +8,4 @@ case class Job(private val _dependencies: (Int, List[Dependency.Type], List[Int]
 object Job extends App {
 	printf("Test")
 }
+:q
