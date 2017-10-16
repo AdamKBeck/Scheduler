@@ -22,7 +22,7 @@ object SoftwarePlatform {
 	/* Input: Job 'job', a job list of lists 'schedule', and the duration of the list 'scheduleDuration'
 	 * Output: Returns a job list of lists, the valid ordering of least duration of 'job' into 'schedule'
 	 */
-	def bestValidOrdering(job: Job, schedule: ListBuffer[ListBuffer[Job]], scheduleDuration: Int) {
+	def bestValidOrdering(job: Job, schedule: ListBuffer[ListBuffer[Job]], scheduleDuration: Int): ListBuffer[ListBuffer[Job]] = {
 		???
 	}
 
@@ -33,5 +33,10 @@ object SoftwarePlatform {
 		???
 	}
 
-
+	/* Input: A job list of list of jobs 'schedule'
+	 * Output: The duration of schedule
+	 */
+	def jobListDuration(schedule: ListBuffer[ListBuffer[Job]], scheduleDuration: Int) = {
+		
+	}
 }
