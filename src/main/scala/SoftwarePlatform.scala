@@ -103,12 +103,129 @@ object SoftwarePlatform {
 	/* Input: A job lists of lists 'schedule'
 	 * Output: Boolean whether or not 'schedule' has jobs which have valid dependencies on each other
 	 */
+	//TODO: rename to isScheduleValid?
 	def isListValid(schedule: ListBuffer[ListBuffer[Job]]): Boolean = {
 		// for each l in L
-		// 		Check if each job j in L is in a valid spot relative to the jobs in L. Return false if not valid
+		for ((jobList, listIndex) <- schedule.zipWithIndex) {
+			// Check if each job j in L is in a valid spot relative to the jobs in L. Return false if not valid
+			for ((job, jobIndex) <- jobList.zipWithIndex) {
+				if (!isParallelDependenciesValid(job, jobIndex, jobList) || !isPrecedingDependenciesValid(schedule.slice(0, listIndex), job, jobIndex)) {}
+				//TODO finish above
+			}
+
+		}
 
 		// return true
+		true
+	}
 
-		???
+
+	 /* Helper method for isListValid. Checks if any job in the list has an invalid dependency on the passed job, otherwise
+		* return true */
+	def isParallelDependenciesValid(job: Job, index: Int, jobList: ListBuffer[Job]): Boolean = {
+		for (j <- jobList) {
+			if (j.id == job.id) {
+
+			}
+			else {
+				if (isContainingDependency(j, Dependency.BEGIN_BEGIN) || !isParallelEEValid(job, j)) {
+					false //TODO: check if the begin begin dependency is on 'job' itself. we currently just check if a job has that type of dependency. do this for all methods below
+				}
+			}
+		}
+
+		true
+	}
+
+	// Helper method for isParallelListInvalid. Checks if a job has contains a given dependency type
+	def isContainingDependency(job: Job, dependencyType: Dependency.Type): Boolean = {
+		for (dependency <- job.dependencies) {
+			if (dependency.dependencyType == dependencyType) {
+				return true
+			}
+		}
+
+		false
+	}
+
+	/* Helper method for isParallelListInvalid. Checks if an End-End dependency
+	 * from thisJob to thatJob is valid based on their durations.
+	 */
+	def isParallelEEValid(thisJob: Job, thatJob: Job): Boolean = {
+		for (dependency <- thisJob.dependencies) {
+			if (dependency.dependencyType == Dependency.END_END) {
+				if (dependency.dependencyID == thatJob.id && thisJob.duration < thatJob.duration) {
+					return false
+				}
+			}
+		}
+
+		true
+	}
+
+	// Helper for isListValid. Checks if preceding dependencies are valid on a passed job
+	def isPrecedingDependenciesValid(subschedule: ListBuffer[ListBuffer[Job]], job: Job, jobIndex: Int): Boolean = {
+		// Others can't have end-begin or begin begin
+		for (jobList <- subschedule) {
+			for (j <- jobList) {
+				if (!verifyPrecedingDependencies(job, j, subschedule, jobIndex)) {
+					return false
+				}
+			}
+		}
+
+		true
+
+	}
+
+	/* Helper method for isPrecendingDependencies Valid. Checks all types of dependencies against thisJob,
+	 * and sees if any are of an invalid type or in an invalid place. Named as a procedure as its primary purpose
+	 * is to check against a wide array of dependencies and invalid places.
+	 */
+	def verifyPrecedingDependencies(thisJob: Job, thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
+		if (isPrecedingJobContaining(thatJob, Dependency.END_BEGIN, Dependency.BEGIN_BEGIN)) {
+			return false
+		}
+
+		if (!isPrecedingDurationsValid(thisJob, thatJob, subschedule, jobIndex)) {
+			return false
+		}
+
+		true
+	}
+
+	def isPrecedingJobContaining(job: Job, dependency: Dependency.Type, otherDependency: Dependency.Type): Boolean = {
+		for (dependency <- job.dependencies) {
+			if (dependency.dependencyType == dependency || dependency.dependencyType == otherDependency) {
+				return true
+			}
+		}
+
+		return false
+	}
+
+	def isPrecedingDurationsValid(thisJob: Job, thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
+		if (!isPrecedingBEValid(thatJob, subschedule, jobIndex) || !isPrecedingEEValid(thisJob, thatJob, subschedule, jobIndex)) {
+			false
+		}
+
+		true
+	}
+
+	def isPrecedingBEValid(thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
+		if (isPrecedingJobContaining(thatJob, Dependency.BEGIN_END, Dependency.BEGIN_END)) { //TODO: fix this double paramater
+			thatJob.duration > jobListDuration(subschedule.slice(jobIndex, subschedule.size))
+		}
+
+		true
+
+	}
+
+	def isPrecedingEEValid(thisJob: Job, thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
+		if (isPrecedingJobContaining(thatJob, Dependency.END_END, Dependency.END_END)) { // TODO: fix double paramater
+			thatJob.duration > jobListDuration(subschedule.slice(jobIndex, subschedule.size)) + thisJob.duration
+		}
+
+		true
 	}
 }
