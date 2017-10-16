@@ -1,7 +1,11 @@
 package scheduler
 
-case class Dependency(private val _dependencyType: Dependency.Type) {
+case class Dependency(private val _dependencyType: Dependency.Type, _jobID: Int, _dependencyID: Int) {
 	def dependencyType = _dependencyType
+
+	def jobID = _jobID
+
+	def dependencyID = _dependencyID
 }
 
 object Dependency {
