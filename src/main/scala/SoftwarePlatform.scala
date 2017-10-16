@@ -62,7 +62,7 @@ object SoftwarePlatform {
 
 		// for each job in J
 		for (j <- jobs) {
-			// append job to l if job depenends on j
+			// append job to l if job depends on j
 			val jobDependencies = j.dependencies.filter(_.dependencyID == job.id)
 
 			if (jobDependencies.nonEmpty) {
