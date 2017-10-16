@@ -55,14 +55,24 @@ object SoftwarePlatform {
 	 */
 	def circularDependency(job: Job, jobs: Set[Job]): Set[Job] = {
 		// Let l be a new list
+		val circularJobs = ListBuffer[Job]()
+
 		// Append j to l
+		circularJobs += job
 
 		// for each job in J
-		//		append job to l if job depenends on j
+		for (j <- jobs) {
+			// append job to l if job depenends on j
+			val jobDependencies = j.dependencies.filter(_.dependencyID == job.id)
+
+			if (jobDependencies.nonEmpty) {
+				circularJobs += j
+			}
+
+		}
 
 		// return l
-
-		???
+		circularJobs.toSet
 	}
 
 	/* Input: A job list of list of jobs 'schedule'
