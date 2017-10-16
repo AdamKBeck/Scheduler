@@ -17,24 +17,41 @@ object SoftwarePlatform {
 	 */
 	def estimatedDeliveryTime(jobs: List[Job]): Int = {
 		// if jobs is empty return 0
+		if (jobs.isEmpty) {
+			return 0
+		}
 		// let L be a new list of lists
+		var schedule = ListBuffer[ListBuffer[Job]]()
+
 		// Insert J[0] to L
+		schedule += ListBuffer[Job]()
+		schedule(0) += jobs.head
+
 		// totalDuration <- J[0].duration
+		var totalDuration = jobs.head.duration
 
 		//for each j in J where j not equal to J[0]
-		//	L <- bestValidOrdering(j, L, totalDuration)
-		//	if L is empty return circularDependency(j, list of jobs we've encountered so far)
-		//	else totalDuration <- jobListDuration(L)
-
+		for (job <- jobs.tail) {
+			//	L <- bestValidOrdering(j, L, totalDuration)
+			schedule = bestValidOrdering(job, schedule, totalDuration)
+			//	if L is empty return circularDependency(j, list of jobs we've encountered so far)
+			if (schedule.isEmpty) {
+				// TODO: custom error handler that prints out the circular dependency
+			}
+			//	else totalDuration <- jobListDuration(L)
+			else {
+				totalDuration = jobListDuration(schedule)
+			}
+		}
 		// return jobListDuration(L)
-
-		???
+		jobListDuration(schedule)
 	}
 
 	/* Input: Job 'job', a job list of lists 'schedule', and the duration of the list 'scheduleDuration'
 	 * Output: Returns a job list of lists, the valid ordering of least duration of 'job' into 'schedule'
 	 */
 	def bestValidOrdering(job: Job, schedule: ListBuffer[ListBuffer[Job]], scheduleDuration: Int): ListBuffer[ListBuffer[Job]] = {
+		//TODO: preserve the schedule by creating a copy of it
 		// maxOrdering <- d + j.duration // helpful for our min block below
 		// numInsertions = L.length + 1
 		// let minDurationList be a new list of lists
@@ -231,7 +248,7 @@ object SoftwarePlatform {
 	}
 
 	/* Helper method for isPrecedingDurationsValid. Checks if an end-end dependency from a preceding job to a given job
-	 * is valid (i.e. if the duration is extends past where the given job ends 
+	 * is valid (i.e. if the duration is extends past where the given job ends
 	 */
 	def isPrecedingEEValid(thisJob: Job, thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
 		if (isPrecedingJobContaining(thatJob, Dependency.END_END, Dependency.END_END)) { // TODO: fix double paramater
