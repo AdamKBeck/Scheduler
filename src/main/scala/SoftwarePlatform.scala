@@ -16,6 +16,18 @@ object SoftwarePlatform {
 	 * when looping through the list.
 	 */
 	def estimatedDeliveryTime(jobs: List[Job]): Int = {
+		// if jobs is empty return 0
+		// let L be a new list of lists
+		// Insert J[0] to L
+		// totalDuration <- J[0].duration
+
+		//for each j in J where j not equal to J[0]
+		//	L <- bestValidOrdering(j, L, totalDuration)
+		//	if L is empty return circularDependency(j, list of jobs we've encountered so far)
+		//	else totalDuration <- jobListDuration(L)
+
+		// return jobListDuration(L)
+
 		???
 	}
 
@@ -23,6 +35,18 @@ object SoftwarePlatform {
 	 * Output: Returns a job list of lists, the valid ordering of least duration of 'job' into 'schedule'
 	 */
 	def bestValidOrdering(job: Job, schedule: ListBuffer[ListBuffer[Job]], scheduleDuration: Int): ListBuffer[ListBuffer[Job]] = {
+		// maxOrdering <- d + j.duration // helpful for our min block below
+		// numInsertions = L.length + 1
+		// let minDurationList be a new list of lists
+
+		// minDurationList <- min {
+		//	for i <- 1 to numInsertions
+		//		tempDurationList <- L
+		//		Slide j into the next available tempDurationList location
+		//		Call isListValid(tempDurationList), proceed if verifies
+		//		jobListDUuration(tempDurationList)
+
+		// return the duration of minDurationList
 		???
 	}
 
@@ -30,13 +54,40 @@ object SoftwarePlatform {
 	 * Output: Returns a set of jobs which forms a circular dependency
 	 */
 	def circularDependency(job: Job, jobs: Set[Job]): Set[Job] = {
+		// Let l be a new list
+		// Append j to l
+
+		// for each job in J
+		//		append job to l if job depenends on j
+
+		// return l
+
 		???
 	}
 
 	/* Input: A job list of list of jobs 'schedule'
 	 * Output: The duration of schedule
 	 */
-	def jobListDuration(schedule: ListBuffer[ListBuffer[Job]], scheduleDuration: Int) = {
-		
+	def jobListDuration(schedule: ListBuffer[ListBuffer[Job]], scheduleDuration: Int): Int = {
+		// totalDuration <- 0
+		// for l in L
+		//		if l is of length 1
+		//			totalDuration <- totalDuration + the duration of the job in l
+		//		else totalDuration <- totalDuration + max{duration of jobs in l}
+		//	return totalDuration
+
+		???
+	}
+
+	/* Input: A job lists of lists 'schedule'
+	 * Output: Boolean whether or not 'schedule' has jobs which have valid dependencies on each other
+	 */
+	def isListValid(schedule: ListBuffer[ListBuffer[Job]]): Boolean = {
+		// for each l in L
+		// 		Check if each job j in L is in a vlid spot relative to the jobs in L. Return false if not valid
+
+		// return true
+
+		???
 	}
 }
