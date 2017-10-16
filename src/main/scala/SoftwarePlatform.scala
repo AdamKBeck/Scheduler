@@ -26,5 +26,12 @@ object SoftwarePlatform {
 		???
 	}
 
+	/* Input: Job 'job', a set of assignments 'Jobs'
+	 * Output: Returns a set of jobs which forms a circular dependency
+	 */
+	def circularDependency(job: Job, jobs: Set[Job]): Set[Job] = {
+		???
+	}
+
 
 }
