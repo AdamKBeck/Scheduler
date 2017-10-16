@@ -194,24 +194,33 @@ object SoftwarePlatform {
 		true
 	}
 
+
+	/* Helper method for verifyPrecedingDependencies. Checks if a job  contains any of two dependency types.
+	 */
 	def isPrecedingJobContaining(job: Job, dependency: Dependency.Type, otherDependency: Dependency.Type): Boolean = {
-		for (dependency <- job.dependencies) {
-			if (dependency.dependencyType == dependency || dependency.dependencyType == otherDependency) {
+		for (d <- job.dependencies) {
+			if (d.dependencyType == dependency || d.dependencyType == otherDependency) {
 				return true
 			}
 		}
 
-		return false
+		false
 	}
 
+	/* Helper method for verifyPrecedingDependencies. Checks if the duration of a job 'thatjob' coming before
+	 * 'thisjob' is a valid duration (i.e. it is not too large depending on the type of dependency is has on 'thisJob')
+	 */
 	def isPrecedingDurationsValid(thisJob: Job, thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
 		if (!isPrecedingBEValid(thatJob, subschedule, jobIndex) || !isPrecedingEEValid(thisJob, thatJob, subschedule, jobIndex)) {
-			false
+			return false
 		}
 
 		true
 	}
 
+	/* Helper method for isPrecidingDuraitonsValid. Checks if a begin-end dependency from a preceding job
+	 * to a given job is valid (i.e. if the duration extends past where that given job starts)
+	 */
 	def isPrecedingBEValid(thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
 		if (isPrecedingJobContaining(thatJob, Dependency.BEGIN_END, Dependency.BEGIN_END)) { //TODO: fix this double paramater
 			thatJob.duration > jobListDuration(subschedule.slice(jobIndex, subschedule.size))
@@ -221,6 +230,9 @@ object SoftwarePlatform {
 
 	}
 
+	/* Helper method for isPrecedingDurationsValid. Checks if an end-end dependency from a preceding job to a given job
+	 * is valid (i.e. if the duration is extends past where the given job ends 
+	 */
 	def isPrecedingEEValid(thisJob: Job, thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
 		if (isPrecedingJobContaining(thatJob, Dependency.END_END, Dependency.END_END)) { // TODO: fix double paramater
 			thatJob.duration > jobListDuration(subschedule.slice(jobIndex, subschedule.size)) + thisJob.duration
