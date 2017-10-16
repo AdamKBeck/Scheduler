@@ -36,7 +36,7 @@ object SoftwarePlatform {
 			schedule = bestValidOrdering(job, schedule, totalDuration)
 			//	if L is empty return circularDependency(j, list of jobs we've encountered so far)
 			if (schedule.isEmpty) {
-				// TODO: custom error handler that prints out the circular dependency
+				throw CircularDependencyException(circularDependency(job, jobs.slice(0, jobs.indexOf(job)).toSet))
 			}
 			//	else totalDuration <- jobListDuration(L)
 			else {
