@@ -68,7 +68,7 @@ object SoftwarePlatform {
 	/* Input: A job list of list of jobs 'schedule'
 	 * Output: The duration of schedule
 	 */
-	def jobListDuration(schedule: ListBuffer[ListBuffer[Job]], scheduleDuration: Int): Int = {
+	def jobListDuration(schedule: ListBuffer[ListBuffer[Job]]): Int = {
 		// totalDuration <- 0
 		var totalDuration = 0
 
