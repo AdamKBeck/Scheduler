@@ -70,13 +70,24 @@ object SoftwarePlatform {
 	 */
 	def jobListDuration(schedule: ListBuffer[ListBuffer[Job]], scheduleDuration: Int): Int = {
 		// totalDuration <- 0
-		// for l in L
-		//		if l is of length 1
-		//			totalDuration <- totalDuration + the duration of the job in l
-		//		else totalDuration <- totalDuration + max{duration of jobs in l}
-		//	return totalDuration
+		var totalDuration = 0
 
-		???
+		// for l in L
+		for (jobList <- schedule) {
+			// if l is of length 1
+			if (jobList.size == 1) {
+				// totalDuration <- totalDuration + the duration of the job in l
+				totalDuration += jobList.head.duration
+			}
+			// else totalDuration <- totalDuration + max{duration of jobs in l}
+			else {
+				totalDuration += jobList.map(_.duration).max
+			}
+		}
+
+		//	return totalDuration
+		totalDuration
+
 	}
 
 	/* Input: A job lists of lists 'schedule'
@@ -84,7 +95,7 @@ object SoftwarePlatform {
 	 */
 	def isListValid(schedule: ListBuffer[ListBuffer[Job]]): Boolean = {
 		// for each l in L
-		// 		Check if each job j in L is in a vlid spot relative to the jobs in L. Return false if not valid
+		// 		Check if each job j in L is in a valid spot relative to the jobs in L. Return false if not valid
 
 		// return true
 
