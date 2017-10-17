@@ -203,7 +203,7 @@ object SoftwarePlatform {
 		// for each l in L
 		for ((jobList, listIndex) <- schedule.zipWithIndex) {
 			// Check if each job j in L is in a valid spot relative to the jobs in L. Return false if not valid
-			for ((job, jobIndex) <- jobList.zipWithIndex) {
+			for (job <- jobList) {
 				if (!isParallelDependenciesValid(job, jobList) || !isPrecedingDependenciesValid(schedule.slice(0, listIndex+1), job)) {
 					scheduleValidity = false
 				}
