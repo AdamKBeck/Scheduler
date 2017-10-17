@@ -46,7 +46,6 @@ object SoftwarePlatform {
 			}
 		}
 		// return jobListDuration(L)
-		//TODO: special method to go backwards?
 		jobListDuration(schedule)
 	}
 
@@ -101,7 +100,7 @@ object SoftwarePlatform {
 		listsOfParallelJob += schedule(index) ++ ListBuffer[Job](job)
 
 		// Insert the job before, in parallel, and after the specified slot index
-		val insertBefore = schedule.slice(0, index) ++ listsOfJob ++ schedule.slice(index, schedule.length)
+		val insertBefore = (schedule.slice(0, index) ++ listsOfJob) ++ schedule.slice(index, schedule.length)
 		val insertParallel = schedule.slice(0, index) ++ listsOfParallelJob ++ schedule.slice(index+1, schedule.length)
 		val insertAfter = schedule.slice(0, index+1) ++ listsOfJob ++ schedule.slice(index+1, schedule.length)
 
@@ -120,14 +119,30 @@ object SoftwarePlatform {
 			new ListBuffer[ListBuffer[Job]]()
 		}
 		else {
-			validSchedules.reduceLeft(minSchedule)
+			// Find the minimum duration of potentially 3 valid schedules
+			bestSchedule(validSchedules.toList)
 		}
 
 	}
 
-	// Helper method for bestValidInsertAroundSlot, specifically for reduceLeft. Function returns the minimum schedule based on duration
-	def minSchedule(s1: ListBuffer[ListBuffer[Job]], s2: ListBuffer[ListBuffer[Job]]): ListBuffer[ListBuffer[Job]]= {
-		if (jobListDuration(s1) < jobListDuration(s2)) s1 else s2
+	// Helper method for bestValidInsertionAroundSlot, finds the minimum duration out of a list of schedules
+	def bestSchedule(schedules: List[ListBuffer[ListBuffer[Job]]]): ListBuffer[ListBuffer[Job]] = {
+		if (schedules.isEmpty) {
+			return ListBuffer[ListBuffer[Job]]()
+		}
+
+		var minDurationSchedule = schedules.head
+		var minDuration = jobListDuration(schedules.head)
+
+		for (schedule <- schedules.tail) {
+			val	duration = jobListDuration(schedule)
+			if (jobListDuration(schedule) < minDuration){
+				minDuration = duration
+				minDurationSchedule = schedule
+			}
+		}
+
+		minDurationSchedule
 	}
 
 	/* Input: Job 'job', a set of assignments 'Jobs'
@@ -303,4 +318,5 @@ object SoftwarePlatform {
 			true
 		}
 	}
+
 }
