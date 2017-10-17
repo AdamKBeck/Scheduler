@@ -25,4 +25,5 @@ object DependencyException {
 	}
 
 	case class CIRCULAR_DEPENDENCY(jobs: List[Job]) extends ErrorCode(jobs.toString)
+	// For future use, more custom exceptions would be added here
 }

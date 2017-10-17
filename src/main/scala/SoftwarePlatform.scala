@@ -1,7 +1,6 @@
 package scheduler
 
 import scala.collection.mutable.ListBuffer
-import scala.collection.mutable.Set
 
 case class SoftwarePlatform() {
 

@@ -5,7 +5,7 @@ case class Job(private val _dependencies: Set[Dependency], _duration: Int, _id: 
 
 	def duration = _duration
 
-	def id = _id // unique to each job
+	def id = _id
 }
 
 object Job extends App {
