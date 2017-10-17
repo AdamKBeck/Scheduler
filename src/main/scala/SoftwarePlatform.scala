@@ -51,20 +51,38 @@ object SoftwarePlatform {
 	 * Output: Returns a job list of lists, the valid ordering of least duration of 'job' into 'schedule'
 	 */
 	def bestValidOrdering(job: Job, schedule: ListBuffer[ListBuffer[Job]], scheduleDuration: Int): ListBuffer[ListBuffer[Job]] = {
-		//TODO: preserve the schedule by creating a copy of it
 		// maxOrdering <- d + j.duration // helpful for our min block below
-		// numInsertions = L.length + 1
+		var minDuration = scheduleDuration + job.duration // We set our running min Duration to the max possible duration to
+
+		// numInsertions = L.length + 1 (note: error in pseudocode, should be 2 * L.length as discussed in class)
+		val numInsertions = 2*schedule.length + 1 //TODO: increase this to account for sliding in between parallel processes
+
 		// let minDurationList be a new list of lists
+		var minDurationList = ListBuffer[ListBuffer[Job]]()
 
 		// minDurationList <- min {
 		//	for i <- 1 to numInsertions
-		//		tempDurationList <- L
-		//		Slide j into the next available tempDurationList location
-		//		Call isListValid(tempDurationList), proceed if verifies
-		//		jobListDUuration(tempDurationList)
+		for (insertionIndex <- 0 until numInsertions) {
+			// tempDurationList <- L
+			val scheduleCopy = schedule
 
-		// return the duration of minDurationList
-		???
+			// Slide j into the next available tempDurationList location
+			scheduleCopy = slideJobIntoSchedule(job, scheduleCopy, insertionIndex)
+
+			// Call isListValid(tempDurationList), proceed if verifies
+			if (isListValid(scheduleCopy)) {
+				// jobListDUuration(tempDurationList)
+				val duration = jobListDuration(scheduleCopy)
+				if (duration < minDuration) {
+					minDuration = duration
+					minDurationList = scheduleCopy
+				}
+			}
+		}
+		// }
+
+		// return the duration of minDurationList (error as discussed in class, return the list itself not the duration)
+		minDurationList
 	}
 
 	/* Input: Job 'job', a set of assignments 'Jobs'
