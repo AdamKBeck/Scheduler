@@ -21,7 +21,7 @@ object SoftwarePlatform {
 			return 0
 		}
 		// let L be a new list of lists
-		var schedule = ListBuffer[ListBuffer[Job]]()
+		var schedule = emptySchedule
 
 		// Insert J[0] to L
 		schedule += ListBuffer[Job]()
@@ -60,7 +60,7 @@ object SoftwarePlatform {
 		val numInsertions = schedule.length
 
 		// let minDurationList be a new list of lists
-		var minDurationList = ListBuffer[ListBuffer[Job]]()
+		var minDurationList = emptySchedule
 
 		// minDurationList <- min {
 		//	for i <- 1 to numInsertions
@@ -81,26 +81,25 @@ object SoftwarePlatform {
 		}
 		// }
 
-		// return the duration of minDurationList (error as discussed in class, return the list itself not the duration)
+		// return the duration of minDurationList (error as discussed in class, return the list itself not the duration which is in estimated delivery time)
 		minDurationList
 	}
 
 	/* Helper method for bestValidOrdering. Inserts job around specified index into a schedule.
 	 * Named as a function because it returns a schedule of least duration for the three cases of inserting around a slot.
-	 * Returns the schedule of least duration.
 	 */
 	def bestValidInsertionAroundSlot(job: Job, schedule: ListBuffer[ListBuffer[Job]], index: Int): ListBuffer[ListBuffer[Job]] = {
 		// Create a list of lists containing just the job for inserting before and after
-		val listsOfJob = ListBuffer[ListBuffer[Job]]()
+		val listsOfJob = emptySchedule
 		listsOfJob += ListBuffer[Job]()
 		listsOfJob.head += job
 
 		// Append job to a parallel list at the specified index for inserting in parallel
-		val listsOfParallelJob = ListBuffer[ListBuffer[Job]]()
+		val listsOfParallelJob = emptySchedule
 		listsOfParallelJob += schedule(index) ++ ListBuffer[Job](job)
 
 		// Insert the job before, in parallel, and after the specified slot index
-		val insertBefore = (schedule.slice(0, index) ++ listsOfJob) ++ schedule.slice(index, schedule.length)
+		val insertBefore = schedule.slice(0, index) ++ listsOfJob ++ schedule.slice(index, schedule.length)
 		val insertParallel = schedule.slice(0, index) ++ listsOfParallelJob ++ schedule.slice(index+1, schedule.length)
 		val insertAfter = schedule.slice(0, index+1) ++ listsOfJob ++ schedule.slice(index+1, schedule.length)
 
@@ -120,15 +119,15 @@ object SoftwarePlatform {
 		}
 		else {
 			// Find the minimum duration of potentially 3 valid schedules
-			bestSchedule(validSchedules.toList)
+			minimumDurationSchedule(validSchedules.toList)
 		}
 
 	}
 
-	// Helper method for bestValidInsertionAroundSlot, finds the minimum duration out of a list of schedules
-	def bestSchedule(schedules: List[ListBuffer[ListBuffer[Job]]]): ListBuffer[ListBuffer[Job]] = {
+	// Helper method for bestValidInsertionAroundSlot, finds the minimum duration schedule out of a list of schedules
+	def minimumDurationSchedule(schedules: List[ListBuffer[ListBuffer[Job]]]): ListBuffer[ListBuffer[Job]] = {
 		if (schedules.isEmpty) {
-			return ListBuffer[ListBuffer[Job]]()
+			return emptySchedule
 		}
 
 		var minDurationSchedule = schedules.head
@@ -218,7 +217,7 @@ object SoftwarePlatform {
 
 	 /* Helper method for isListValid. Checks if any job in the list has an invalid dependency on the passed job, otherwise
 	  * return true */
-	def isParallelDependenciesValid(job: Job, jobList: ListBuffer[Job]): Boolean = {
+	private def isParallelDependenciesValid(job: Job, jobList: ListBuffer[Job]): Boolean = {
 		var parallelDependenciesValidity = true // True by default, even if the list is empty
 		for (j <- jobList) {
 			if (j.id == job.id) {
@@ -235,7 +234,7 @@ object SoftwarePlatform {
 	/* Helper method for isParallelListInvalid. Checks if an End-End dependency
 	 * from thisJob to thatJob is valid based on their durations.
 	 */
-	def isParallelEEValid(thisJob: Job, thatJob: Job): Boolean = {
+	private def isParallelEEValid(thisJob: Job, thatJob: Job): Boolean = {
 		if (DependencyException.verify(thisJob, Dependency.END_END, thatJob.id)) {
 			thisJob.duration >= thatJob.duration
 		}
@@ -247,7 +246,7 @@ object SoftwarePlatform {
 	}
 
 	// Helper for isListValid. Checks if preceding dependencies are valid on a passed job
-	def isPrecedingDependenciesValid(subschedule: ListBuffer[ListBuffer[Job]], job: Job): Boolean = {
+	private def isPrecedingDependenciesValid(subschedule: ListBuffer[ListBuffer[Job]], job: Job): Boolean = {
 		// Others can't have end-begin or begin begin
 		for (jobList <- subschedule) {
 			for ((j, thatJobIndex) <- jobList.zipWithIndex) {
@@ -265,7 +264,7 @@ object SoftwarePlatform {
 	 * and sees if any are of an invalid type or in an invalid place. Named as a procedure as its primary purpose
 	 * is to check against preceding dependencies and invalid places.
 	 */
-	def isPrecedingDependenciesValid(thisJob: Job, thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
+	private def isPrecedingDependenciesValid(thisJob: Job, thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
 		if (DependencyException.verify(thatJob, Dependency.END_BEGIN, thisJob.id) ||
 			DependencyException.verify(thatJob, Dependency.BEGIN_BEGIN, thisJob.id)) {
 			false
@@ -283,7 +282,7 @@ object SoftwarePlatform {
 	/* Helper method for verifyPrecedingDependencies. Checks if the duration of a job 'thatjob' coming before
 	 * 'thisjob' is a valid duration (i.e. it is not too large depending on the type of dependency is has on 'thisJob')
 	 */
-	def isPrecedingDurationsValid(thisJob: Job, thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
+	private def isPrecedingDurationsValid(thisJob: Job, thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
 		if (!isPrecedingBEValid(thisJob, thatJob, subschedule, jobIndex) ||
 			!isPrecedingEEValid(thisJob, thatJob, subschedule, jobIndex)) {
 			false
@@ -296,7 +295,7 @@ object SoftwarePlatform {
 	/* Helper method for isPrecedingDurationsValid. Checks if a begin-end dependency from a preceding job
 	 * to a given job is valid (i.e. if the duration extends past where that given job starts)
 	 */
-	def isPrecedingBEValid(thisJob: Job, thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
+	private def isPrecedingBEValid(thisJob: Job, thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
 		if (DependencyException.verify(thatJob, Dependency.BEGIN_END, thisJob.id)) {
 			thatJob.duration >= jobListDuration(subschedule.slice(jobIndex, subschedule.size))
 		}
@@ -309,7 +308,7 @@ object SoftwarePlatform {
 	/* Helper method for isPrecedingDurationsValid. Checks if an end-end dependency from a preceding job to a given job
 	 * is valid (i.e. if the duration is extends past where the given job ends
 	 */
-	def isPrecedingEEValid(thisJob: Job, thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
+	private def isPrecedingEEValid(thisJob: Job, thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
 		if (DependencyException.verify(thatJob, Dependency.END_END, thisJob.id)) {
 			thatJob.duration >= jobListDuration(subschedule.slice(jobIndex, subschedule.size)) + thisJob.duration
 		}
@@ -318,5 +317,8 @@ object SoftwarePlatform {
 			true
 		}
 	}
+
+	// Returns an empty job schedule
+	private def emptySchedule = ListBuffer[ListBuffer[Job]]()
 
 }
