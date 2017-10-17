@@ -57,7 +57,7 @@ object SoftwarePlatform {
 		var minDuration = scheduleDuration + job.duration // We set our running min Duration to the max possible duration to
 
 		// numInsertions = L.length + 1 (Not +1, error found in class)
-		val numInsertions = schedule.length //TODO: Parallel processes might affect this
+		val numInsertions = schedule.length
 
 		// let minDurationList be a new list of lists
 		var minDurationList = ListBuffer[ListBuffer[Job]]()
@@ -70,7 +70,7 @@ object SoftwarePlatform {
 			val scheduleCopy = bestValidInsertionAroundSlot(job, schedule, insertionIndex)
 
 			// Call isListValid(tempDurationList), proceed if verifies
-			if (scheduleCopy.nonEmpty || isValid(scheduleCopy)) {
+			if (scheduleCopy.nonEmpty && isValid(scheduleCopy)) {
 				// jobListDuration(tempDurationList)
 				val duration = jobListDuration(scheduleCopy)
 				if (duration < minDuration) {
