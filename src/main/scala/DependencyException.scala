@@ -1,7 +1,15 @@
 package scheduler
 
-import scala.collection.mutable.ListBuffer
+case class DependencyException() {
 
-case class DependencyException(jobList: Set[Job]) extends Exception (jobList.toString){
-// TODO: rename as DependencyException modeled after Parser Exception, with verify methods to aid SoftWarePlatform
+}
+
+object DependencyException {
+	//TODO: verify methods to avoid repeated code
+
+	sealed abstract class ErrorCode(val code: String) extends Exception(code) {
+
+	}
+
+	case class CIRCULAR_DEPENDENCY(jobs: List[Job]) extends ErrorCode(jobs.toString)
 }

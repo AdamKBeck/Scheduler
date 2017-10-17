@@ -26,7 +26,7 @@ object SoftwarePlatform {
 
 		// Insert J[0] to L
 		schedule += ListBuffer[Job]()
-		schedule(0) += jobs.head
+		schedule.head += jobs.head
 
 		// totalDuration <- J[0].duration
 		var totalDuration = jobs.head.duration
@@ -37,7 +37,9 @@ object SoftwarePlatform {
 			schedule = bestValidOrdering(job, schedule, totalDuration)
 			//	if L is empty return circularDependency(j, list of jobs we've encountered so far)
 			if (schedule.isEmpty) {
-				throw DependencyException(circularDependency(job, jobs.slice(0, jobs.indexOf(job)).toSet))
+				val jobsEncountered = jobs.slice(0, jobs.indexOf(job))
+
+				throw DependencyException.CIRCULAR_DEPENDENCY(circularDependency(job, jobsEncountered))
 			}
 			//	else totalDuration <- jobListDuration(L)
 			else {
@@ -69,7 +71,7 @@ object SoftwarePlatform {
 			val scheduleCopy = bestValidInsertionAroundSlot(job, schedule, insertionIndex)
 
 			// Call isListValid(tempDurationList), proceed if verifies
-			if (!scheduleCopy.isEmpty || isListValid(scheduleCopy)) {
+			if (scheduleCopy.nonEmpty || isListValid(scheduleCopy)) {
 				// jobListDuration(tempDurationList)
 				val duration = jobListDuration(scheduleCopy)
 				if (duration < minDuration) {
@@ -132,7 +134,7 @@ object SoftwarePlatform {
 	/* Input: Job 'job', a set of assignments 'Jobs'
 	 * Output: Returns a set of jobs which forms a circular dependency
 	 */
-	def circularDependency(job: Job, jobs: Set[Job]): Set[Job] = {
+	def circularDependency(job: Job, jobs: List[Job]): List[Job] = {
 		// Let l be a new list
 		val circularJobs = ListBuffer[Job]()
 
@@ -151,7 +153,7 @@ object SoftwarePlatform {
 		}
 
 		// return l
-		circularJobs.toSet
+		circularJobs.toList
 	}
 
 	/* Input: A job list of list of jobs 'schedule'

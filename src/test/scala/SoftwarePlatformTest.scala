@@ -35,9 +35,9 @@ class SoftwarePlatformTest extends FlatSpec {
 		val job1 = Job(Set(dependency), 5, 10)
 		val job2 = Job(Set(), 3, 2)
 		val job3 = Job(Set(), 4, 5)
-		val jobSet = Set(job1, job3)
+		val jobList = List(job1, job3)
 
-		val circularDependency = SoftwarePlatform.circularDependency(job2, jobSet)
+		val circularDependency = SoftwarePlatform.circularDependency(job2, jobList)
 
 		for (job <- circularDependency) {
 			val dependencies = job.dependencies
