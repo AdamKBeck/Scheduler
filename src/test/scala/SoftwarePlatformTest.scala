@@ -32,10 +32,13 @@ class SoftwarePlatformTest extends FlatSpec {
 	behavior of "circularDependency"
 	it should "return a set of jobs depending on a target job" in {
 		val dependency = Dependency(Dependency.BEGIN_BEGIN, 10, 2)
+		val dependency2 = Dependency(Dependency.END_END, 4, 2)
+
 		val job1 = Job(Set(dependency), 5, 10)
 		val job2 = Job(Set(), 3, 2)
-		val job3 = Job(Set(), 4, 5)
-		val jobList = List(job1, job3)
+		val job3 = Job(Set(dependency2), 4, 5)
+		val job4 = Job(Set(), 4, 2)
+		val jobList = List(job1, job3, job4)
 
 		val circularDependency = SoftwarePlatform.circularDependency(job2, jobList)
 
@@ -47,6 +50,41 @@ class SoftwarePlatformTest extends FlatSpec {
 			}
 		}
 	}
+
+	behavior of "isValid"
+	it should "return correctly for simple valid schedules, incorrect parallel and incorrect sequential schedules" in {
+
+		// Simple valid schedule
+		val job1 = Job(Set(), 7, 1)
+		val job2 = Job(Set(), 8, 2)
+		val job3 = Job(Set(), 8, 4)
+		val schedule = ListBuffer[ListBuffer[Job]]()
+		appendJobToSchedule(job1, schedule)
+		appendJobToSchedule(job2, schedule)
+		insertJobToSchedule(job3, schedule, 0)
+
+		assert(SoftwarePlatform.isValid(schedule))
+
+		// Incorrect parallel schedule
+		val dependency = Dependency(Dependency.BEGIN_BEGIN, 5, 2)
+		val job4 = Job(Set(dependency), 10, 5)
+		insertJobToSchedule(job4, schedule, 0)
+		assert(!SoftwarePlatform.isValid(schedule))
+
+	}
+
+	behavior of "isValid for parallel dependencies"
+	it should "return correctly" in {
+		val dependency = Dependency(Dependency.END_END, 1, 2)
+		val job = Job(Set(dependency), 10, 1)
+		val job2 = Job(Set(), 11, 2)
+		val schedule = ListBuffer[ListBuffer[Job]]()
+		schedule += ListBuffer[Job]()
+		insertJobToSchedule(job, schedule, 0)
+		insertJobToSchedule(job2, schedule, 0)
+		assert(!SoftwarePlatform.isValid(schedule))
+	}
+
 
 	// Appends a job to the end of a schedule in new separate list
 	def appendJobToSchedule(job: Job, schedule: ListBuffer[ListBuffer[Job]]): Unit = {

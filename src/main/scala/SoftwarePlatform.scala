@@ -190,7 +190,7 @@ object SoftwarePlatform {
 		for ((jobList, listIndex) <- schedule.zipWithIndex) {
 			// Check if each job j in L is in a valid spot relative to the jobs in L. Return false if not valid
 			for ((job, jobIndex) <- jobList.zipWithIndex) {
-				if (!isParallelDependenciesValid(job, jobIndex, jobList) || !isPrecedingDependenciesValid(schedule.slice(0, listIndex+1), job)) {
+				if (!isParallelDependenciesValid(job, jobList) || !isPrecedingDependenciesValid(schedule.slice(0, listIndex+1), job)) {
 					scheduleValidity = false
 				}
 			}
@@ -203,17 +203,18 @@ object SoftwarePlatform {
 
 	 /* Helper method for isListValid. Checks if any job in the list has an invalid dependency on the passed job, otherwise
 	  * return true */
-	def isParallelDependenciesValid(job: Job, index: Int, jobList: ListBuffer[Job]): Boolean = {
+	def isParallelDependenciesValid(job: Job, jobList: ListBuffer[Job]): Boolean = {
+		var parallelDependenciesValidity = true // True by default, even if the list is empty
 		for (j <- jobList) {
 			if (j.id == job.id) {
 
 			}
 			else if (DependencyException.verify(j, Dependency.END_BEGIN, job.id) || !isParallelEEValid(job, j)) {
-				return false
+				parallelDependenciesValidity = false
 			}
 		}
 
-		true
+		parallelDependenciesValidity
 	}
 
 	/* Helper method for isParallelListInvalid. Checks if an End-End dependency
@@ -225,7 +226,9 @@ object SoftwarePlatform {
 		}
 
 		// If there is no EE exception in between the two jobs, it is satisfied
-		true
+		else {
+			true
+		}
 	}
 
 	// Helper for isListValid. Checks if preceding dependencies are valid on a passed job
@@ -283,8 +286,9 @@ object SoftwarePlatform {
 			thatJob.duration >= jobListDuration(subschedule.slice(jobIndex, subschedule.size))
 		}
 
-		true
-
+		else {
+			true
+		}
 	}
 
 	/* Helper method for isPrecedingDurationsValid. Checks if an end-end dependency from a preceding job to a given job
@@ -295,6 +299,8 @@ object SoftwarePlatform {
 			thatJob.duration >= jobListDuration(subschedule.slice(jobIndex, subschedule.size)) + thisJob.duration
 		}
 
-		true
+		else {
+			true
+		}
 	}
 }
