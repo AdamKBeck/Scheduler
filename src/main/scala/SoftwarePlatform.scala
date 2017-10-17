@@ -98,8 +98,7 @@ object SoftwarePlatform {
 
 		// Append job to a parallel list at the specified index for inserting in parallel
 		val listsOfParallelJob = ListBuffer[ListBuffer[Job]]()
-		listsOfParallelJob += schedule(index)
-		listsOfParallelJob.head += job
+		listsOfParallelJob += schedule(index) ++ ListBuffer[Job](job)
 
 		// Insert the job before, in parallel, and after the specified slot index
 		val insertBefore = schedule.slice(0, index) ++ listsOfJob ++ schedule.slice(index, schedule.length)
