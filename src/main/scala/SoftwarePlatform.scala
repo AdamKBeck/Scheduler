@@ -1,6 +1,7 @@
 package scheduler
 
 import scala.collection.mutable.ListBuffer
+import scala.collection.mutable.Set
 
 case class SoftwarePlatform() {
 
@@ -54,8 +55,8 @@ object SoftwarePlatform {
 		// maxOrdering <- d + j.duration // helpful for our min block below
 		var minDuration = scheduleDuration + job.duration // We set our running min Duration to the max possible duration to
 
-		// numInsertions = L.length + 1 (note: error in pseudocode, should be 2 * L.length as discussed in class)
-		val numInsertions = 2*schedule.length + 1 //TODO: increase this to account for sliding in between parallel processes
+		// numInsertions = L.length + 1 (Not +1, error found in class)
+		val numInsertions = schedule.length //TODO: Parallel processes might affect this
 
 		// let minDurationList be a new list of lists
 		var minDurationList = ListBuffer[ListBuffer[Job]]()
@@ -64,14 +65,12 @@ object SoftwarePlatform {
 		//	for i <- 1 to numInsertions
 		for (insertionIndex <- 0 until numInsertions) {
 			// tempDurationList <- L
-			val scheduleCopy = schedule
-
-			// Slide j into the next available tempDurationList location
-			scheduleCopy = slideJobIntoSchedule(job, scheduleCopy, insertionIndex)
+			// Inserts a job around a specified index. Returns the insertion of least duration
+			val scheduleCopy = bestValidInsertionAroundSlot(job, schedule, insertionIndex)
 
 			// Call isListValid(tempDurationList), proceed if verifies
-			if (isListValid(scheduleCopy)) {
-				// jobListDUuration(tempDurationList)
+			if (!scheduleCopy.isEmpty || isListValid(scheduleCopy)) {
+				// jobListDuration(tempDurationList)
 				val duration = jobListDuration(scheduleCopy)
 				if (duration < minDuration) {
 					minDuration = duration
@@ -83,6 +82,51 @@ object SoftwarePlatform {
 
 		// return the duration of minDurationList (error as discussed in class, return the list itself not the duration)
 		minDurationList
+	}
+
+	/* Helper method for bestValidOrdering. Inserts job around specified index into a schedule.
+	 * Named as a function because it returns a schedule of least duration for the three cases of inserting around a slot.
+	 * Returns the schedule of least duration.
+	 */
+	def bestValidInsertionAroundSlot(job: Job, schedule: ListBuffer[ListBuffer[Job]], index: Int): ListBuffer[ListBuffer[Job]] = {
+		// Create a list of lists containing just the job for inserting before and after
+		val listsOfJob = ListBuffer[ListBuffer[Job]]()
+		listsOfJob += ListBuffer[Job]()
+		listsOfJob.head += job
+
+		// Append job to a parallel list at the specified index for inserting in parallel
+		val listsOfParallelJob = ListBuffer[ListBuffer[Job]]()
+		listsOfParallelJob += schedule(index)
+		listsOfParallelJob.head += job
+
+		// Insert the job before, in parallel, and after the specified slot index
+		val insertBefore = schedule.slice(0, index) ++ listsOfJob ++ schedule.slice(index, schedule.length)
+		val insertParallel = schedule.slice(0, index) ++ listsOfParallelJob ++ schedule.slice(index+1, schedule.length)
+		val insertAfter = schedule.slice(0, index+1) ++ listsOfJob ++ schedule.slice(index+1, schedule.length)
+
+		val validSchedules = Set[ListBuffer[ListBuffer[Job]]]()
+		validSchedules += insertBefore += insertParallel += insertAfter
+
+		// Remove invalid schedules
+		for (s <- validSchedules) {
+			if (!isListValid(s)) {
+				validSchedules -= s
+			}
+		}
+
+		// Return the insertion of least duration, or an empty list if nothing was valid
+		if (validSchedules.isEmpty) {
+			new ListBuffer[ListBuffer[Job]]()
+		}
+		else {
+			validSchedules.reduceLeft(minSchedule)
+		}
+
+	}
+
+	// Helper method for bestValidInsertAroundSlot, specifically for reduceLeft. Function returns the minimum schedule based on duration
+	def minSchedule(s1: ListBuffer[ListBuffer[Job]], s2: ListBuffer[ListBuffer[Job]]): ListBuffer[ListBuffer[Job]]= {
+		if (jobListDuration(s1) < jobListDuration(s2)) s1 else s2
 	}
 
 	/* Input: Job 'job', a set of assignments 'Jobs'
@@ -145,7 +189,6 @@ object SoftwarePlatform {
 			// Check if each job j in L is in a valid spot relative to the jobs in L. Return false if not valid
 			for ((job, jobIndex) <- jobList.zipWithIndex) {
 				if (!isParallelDependenciesValid(job, jobIndex, jobList) || !isPrecedingDependenciesValid(schedule.slice(0, listIndex), job, jobIndex)) {}
-				//TODO finish above
 			}
 
 		}
