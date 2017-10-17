@@ -71,7 +71,7 @@ object SoftwarePlatform {
 			val scheduleCopy = bestValidInsertionAroundSlot(job, schedule, insertionIndex)
 
 			// Call isListValid(tempDurationList), proceed if verifies
-			if (scheduleCopy.nonEmpty || isListValid(scheduleCopy)) {
+			if (scheduleCopy.nonEmpty || isValid(scheduleCopy)) {
 				// jobListDuration(tempDurationList)
 				val duration = jobListDuration(scheduleCopy)
 				if (duration < minDuration) {
@@ -106,12 +106,12 @@ object SoftwarePlatform {
 		val insertParallel = schedule.slice(0, index) ++ listsOfParallelJob ++ schedule.slice(index+1, schedule.length)
 		val insertAfter = schedule.slice(0, index+1) ++ listsOfJob ++ schedule.slice(index+1, schedule.length)
 
-		val validSchedules = Set[ListBuffer[ListBuffer[Job]]]()
+		val validSchedules = scala.collection.mutable.Set[ListBuffer[ListBuffer[Job]]]()
 		validSchedules += insertBefore += insertParallel += insertAfter
 
 		// Remove invalid schedules
 		for (s <- validSchedules) {
-			if (!isListValid(s)) {
+			if (!isValid(s)) {
 				validSchedules -= s
 			}
 		}
@@ -185,7 +185,7 @@ object SoftwarePlatform {
 	 * Output: Boolean whether or not 'schedule' has jobs which have valid dependencies on each other
 	 */
 	//TODO: rename to isScheduleValid?
-	def isListValid(schedule: ListBuffer[ListBuffer[Job]]): Boolean = {
+	def isValid(schedule: ListBuffer[ListBuffer[Job]]): Boolean = {
 		// for each l in L
 		for ((jobList, listIndex) <- schedule.zipWithIndex) {
 			// Check if each job j in L is in a valid spot relative to the jobs in L. Return false if not valid
