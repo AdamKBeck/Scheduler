@@ -18,35 +18,38 @@ object SoftwarePlatform {
 	def estimatedDeliveryTime(jobs: List[Job]): Int = {
 		// if jobs is empty return 0
 		if (jobs.isEmpty) {
-			return 0
+			0
 		}
-		// let L be a new list of lists
-		var schedule = emptySchedule
 
-		// Insert J[0] to L
-		schedule += ListBuffer[Job]()
-		schedule.head += jobs.head
+		else {
+			// let L be a new list of lists
+			var schedule = emptySchedule
 
-		// totalDuration <- J[0].duration
-		var totalDuration = jobs.head.duration
+			// Insert J[0] to L
+			schedule += ListBuffer[Job]()
+			schedule.head += jobs.head
 
-		//for each j in J where j not equal to J[0]
-		for (job <- jobs.tail) {
-			//	L <- bestValidOrdering(j, L, totalDuration)
-			schedule = bestValidOrdering(job, schedule, totalDuration)
-			//	if L is empty return circularDependency(j, list of jobs we've encountered so far)
-			if (schedule.isEmpty) {
-				val jobsEncountered = jobs.slice(0, jobs.indexOf(job))
+			// totalDuration <- J[0].duration
+			var totalDuration = jobs.head.duration
 
-				throw DependencyException.CIRCULAR_DEPENDENCY(circularDependency(job, jobsEncountered))
+			//for each j in J where j not equal to J[0]
+			for (job <- jobs.tail) {
+				//	L <- bestValidOrdering(j, L, totalDuration)
+				schedule = bestValidOrdering(job, schedule, totalDuration)
+				//	if L is empty return circularDependency(j, list of jobs we've encountered so far)
+				if (schedule.isEmpty) {
+					val jobsEncountered = jobs.slice(0, jobs.indexOf(job))
+
+					throw DependencyException.CIRCULAR_DEPENDENCY(circularDependency(job, jobsEncountered))
+				}
+				//	else totalDuration <- jobListDuration(L)
+				else {
+					totalDuration = jobListDuration(schedule)
+				}
 			}
-			//	else totalDuration <- jobListDuration(L)
-			else {
-				totalDuration = jobListDuration(schedule)
-			}
+			// return jobListDuration(L)
+			jobListDuration(schedule)
 		}
-		// return jobListDuration(L)
-		jobListDuration(schedule)
 	}
 
 	/* Input: Job 'job', a job list of lists 'schedule', and the duration of the list 'scheduleDuration'
@@ -115,7 +118,7 @@ object SoftwarePlatform {
 
 		// Return the insertion of least duration, or an empty list if nothing was valid
 		if (validSchedules.isEmpty) {
-			new ListBuffer[ListBuffer[Job]]()
+			emptySchedule
 		}
 		else {
 			// Find the minimum duration of potentially 3 valid schedules
@@ -127,21 +130,22 @@ object SoftwarePlatform {
 	// Helper method for bestValidInsertionAroundSlot, finds the minimum duration schedule out of a list of schedules
 	def minimumDurationSchedule(schedules: List[ListBuffer[ListBuffer[Job]]]): ListBuffer[ListBuffer[Job]] = {
 		if (schedules.isEmpty) {
-			return emptySchedule
+			emptySchedule
 		}
+		else {
+			var minDurationSchedule = schedules.head
+			var minDuration = jobListDuration(schedules.head)
 
-		var minDurationSchedule = schedules.head
-		var minDuration = jobListDuration(schedules.head)
-
-		for (schedule <- schedules.tail) {
-			val	duration = jobListDuration(schedule)
-			if (jobListDuration(schedule) < minDuration){
-				minDuration = duration
-				minDurationSchedule = schedule
+			for (schedule <- schedules.tail) {
+				val duration = jobListDuration(schedule)
+				if (jobListDuration(schedule) < minDuration) {
+					minDuration = duration
+					minDurationSchedule = schedule
+				}
 			}
-		}
 
-		minDurationSchedule
+			minDurationSchedule
+		}
 	}
 
 	/* Input: Job 'job', a set of assignments 'Jobs'
