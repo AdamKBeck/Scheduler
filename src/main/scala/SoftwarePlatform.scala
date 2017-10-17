@@ -106,23 +106,23 @@ object SoftwarePlatform {
 		val insertParallel = schedule.slice(0, index) ++ listsOfParallelJob ++ schedule.slice(index+1, schedule.length)
 		val insertAfter = schedule.slice(0, index+1) ++ listsOfJob ++ schedule.slice(index+1, schedule.length)
 
-		val validSchedules = scala.collection.mutable.Set[ListBuffer[ListBuffer[Job]]]()
-		validSchedules += insertBefore += insertParallel += insertAfter
+		val schedules = scala.collection.mutable.Set[ListBuffer[ListBuffer[Job]]]()
+		schedules += insertBefore += insertParallel += insertAfter
 
 		// Remove invalid schedules
-		for (s <- validSchedules) {
+		for (s <- schedules) {
 			if (!isValid(s)) {
-				validSchedules -= s
+				schedules -= s
 			}
 		}
 
 		// Return the insertion of least duration, or an empty list if nothing was valid
-		if (validSchedules.isEmpty) {
+		if (schedules.isEmpty) {
 			emptySchedule
 		}
 		else {
 			// Find the minimum duration of potentially 3 valid schedules
-			minimumDurationSchedule(validSchedules.toList)
+			minimumDurationSchedule(schedules.toList)
 		}
 
 	}
