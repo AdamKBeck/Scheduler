@@ -119,7 +119,7 @@ class SoftwarePlatformTest extends FlatSpec {
 		val job3 = Job(Set(), 8, 4)
 		val jobList = List(job1, job2, job3)
 
-		assert(SoftwarePlatform.estimatedDeliveryTime(jobList) == 8)
+		assert(SoftwarePlatform.estimateDeliveryTime(jobList) == 8)
 	}
 
 	// Appends a job to the end of a schedule in new separate list

@@ -15,7 +15,7 @@ object SoftwarePlatform {
 	 * encountered, which can be accomplished by splicing our list at the index we are currently on
 	 * when looping through the list.
 	 */
-	def estimatedDeliveryTime(jobs: List[Job]): Int = {
+	def estimateDeliveryTime(jobs: List[Job]): Int = {
 		// if jobs is empty return 0
 		if (jobs.isEmpty) {
 			0
