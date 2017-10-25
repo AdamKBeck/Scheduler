@@ -220,7 +220,7 @@ object SoftwarePlatform {
 			if (j.id == job.id) {
 
 			}
-			else if (DependencyException.verify(j, Dependency.END_BEGIN, job.id) || !isParallelEEValid(job, j)) {
+			else if (DependencyException.verify(j, Dependency.END_BEGIN, job.id) || !isParallelEndEndValid(job, j)) {
 				parallelDependenciesValidity = false
 			}
 		}
@@ -231,7 +231,7 @@ object SoftwarePlatform {
 	/* Helper method for isParallelListInvalid. Checks if an End-End dependency
 	 * from thisJob to thatJob is valid based on their durations.
 	 */
-	private def isParallelEEValid(thisJob: Job, thatJob: Job): Boolean = {
+	private def isParallelEndEndValid(thisJob: Job, thatJob: Job): Boolean = {
 		if (DependencyException.verify(thisJob, Dependency.END_END, thatJob.id)) {
 			thisJob.duration >= thatJob.duration
 		}
@@ -280,8 +280,8 @@ object SoftwarePlatform {
 	 * 'thisjob' is a valid duration (i.e. it is not too large depending on the type of dependency is has on 'thisJob')
 	 */
 	private def isPrecedingDurationsValid(thisJob: Job, thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
-		if (!isPrecedingBEValid(thisJob, thatJob, subschedule, jobIndex) ||
-			!isPrecedingEEValid(thisJob, thatJob, subschedule, jobIndex)) {
+		if (!isPrecedingBeginEndValid(thisJob, thatJob, subschedule, jobIndex) ||
+			!isPrecedingEndEndValid(thisJob, thatJob, subschedule, jobIndex)) {
 			false
 		}
 		else {
@@ -292,7 +292,7 @@ object SoftwarePlatform {
 	/* Helper method for isPrecedingDurationsValid. Checks if a begin-end dependency from a preceding job
 	 * to a given job is valid (i.e. if the duration extends past where that given job starts)
 	 */
-	private def isPrecedingBEValid(thisJob: Job, thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
+	private def isPrecedingBeginEndValid(thisJob: Job, thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
 		if (DependencyException.verify(thatJob, Dependency.BEGIN_END, thisJob.id)) {
 			thatJob.duration >= jobListDuration(subschedule.slice(jobIndex, subschedule.size))
 		}
@@ -305,7 +305,7 @@ object SoftwarePlatform {
 	/* Helper method for isPrecedingDurationsValid. Checks if an end-end dependency from a preceding job to a given job
 	 * is valid (i.e. if the duration is extends past where the given job ends
 	 */
-	private def isPrecedingEEValid(thisJob: Job, thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
+	private def isPrecedingEndEndValid(thisJob: Job, thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
 		if (DependencyException.verify(thatJob, Dependency.END_END, thisJob.id)) {
 			thatJob.duration >= jobListDuration(subschedule.slice(jobIndex, subschedule.size)) + thisJob.duration
 		}
