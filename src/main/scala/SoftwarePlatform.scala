@@ -201,7 +201,7 @@ object SoftwarePlatform {
 		for ((jobList, listIndex) <- schedule.zipWithIndex) {
 			// Check if each job j in L is in a valid spot relative to the jobs in L. Return false if not valid
 			for (job <- jobList) {
-				if (!isParallelDependenciesValid(job, jobList) || !isPrecedingDependenciesValid(schedule.slice(0, listIndex+1), job)) {
+				if (!areParallelDependenciesValid(job, jobList) || !arePrecedingDependenciesValid(schedule.slice(0, listIndex+1), job)) {
 					scheduleValidity = false
 				}
 			}
@@ -214,7 +214,7 @@ object SoftwarePlatform {
 
 	 /* Helper method for isListValid. Checks if any job in the list has an invalid dependency on the passed job, otherwise
 	  * return true */
-	private def isParallelDependenciesValid(job: Job, jobList: ListBuffer[Job]): Boolean = {
+	private def areParallelDependenciesValid(job: Job, jobList: ListBuffer[Job]): Boolean = {
 		var parallelDependenciesValidity = true // True by default, even if the list is empty
 		for (j <- jobList) {
 			if (j.id == job.id) {
@@ -243,11 +243,11 @@ object SoftwarePlatform {
 	}
 
 	// Helper for isListValid. Checks if preceding dependencies are valid on a passed job
-	private def isPrecedingDependenciesValid(subschedule: ListBuffer[ListBuffer[Job]], job: Job): Boolean = {
+	private def arePrecedingDependenciesValid(subschedule: ListBuffer[ListBuffer[Job]], job: Job): Boolean = {
 		// Others can't have end-begin or begin begin
 		for (jobList <- subschedule) {
 			for ((j, thatJobIndex) <- jobList.zipWithIndex) {
-				if (!isPrecedingDependenciesValid(job, j, subschedule, thatJobIndex)) {
+				if (!isPrecedingDependencyValid(job, j, subschedule, thatJobIndex)) {
 					return false
 				}
 			}
@@ -261,7 +261,7 @@ object SoftwarePlatform {
 	 * and sees if any are of an invalid type or in an invalid place. Named as a procedure as its primary purpose
 	 * is to check against preceding dependencies and invalid places.
 	 */
-	private def isPrecedingDependenciesValid(thisJob: Job, thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
+	private def isPrecedingDependencyValid(thisJob: Job, thatJob: Job, subschedule: ListBuffer[ListBuffer[Job]], jobIndex: Int): Boolean = {
 		if (DependencyException.verify(thatJob, Dependency.END_BEGIN, thisJob.id) ||
 			DependencyException.verify(thatJob, Dependency.BEGIN_BEGIN, thisJob.id)) {
 			false
