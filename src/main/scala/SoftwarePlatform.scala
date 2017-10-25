@@ -302,6 +302,18 @@ object SoftwarePlatform {
 		}
 	}
 
+	/* Explanation for why I did not make these methods above and below into one method (PrecedingBE and PRecedingEE methods ^ and V )
+	 * With  more paramaters to make it more extensible, a if statement to differentiate between the paramater would bring the total method
+	 * complexity up to 4, which is risky.
+	 *
+	 * Additionally, I wanted to highlight the difference between how EE and BE durations are determined to be valid by separating these methods out.
+	 * Notice how BE just gets the duration of a preceding job up to the job in question. EE gets the duration from the preceding job up to
+	 * AND INCLUDING the duration of the job in question
+	 *
+	 * I will acknowledge that these methods look very similar, but combining them could cause people to think that they do the exact same thing, just
+	 * for different types of dependencies.
+	 */
+
 	/* Helper method for isPrecedingDurationsValid. Checks if an end-end dependency from a preceding job to a given job
 	 * is valid (i.e. if the duration is extends past where the given job ends
 	 */
