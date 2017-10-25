@@ -18,7 +18,7 @@ object SoftwarePlatform {
 	def estimateDeliveryTime(jobs: List[Job]): Int = {
 		// if jobs is empty return 0
 		if (jobs.isEmpty) {
-			return 0 // Early termination to reduce method nesting for Dan's suggestion
+			return 0 // Early termination to reduce method nesting for Dan's suggestion. Otherwise, if statement has the common path.
 		}
 
 		// let L be a new list of lists
@@ -38,7 +38,7 @@ object SoftwarePlatform {
 			//	if L is empty return circularDependency(j, list of jobs we've encountered so far)
 			if (schedule.isEmpty) {
 				val jobsEncountered = jobs.take(jobs.indexOf(job))
-				throw DependencyException.CIRCULAR_DEPENDENCY(circularDependency(job, jobsEncountered))
+				throw DependencyException.CIRCULAR_DEPENDENCY(invalidDependentJobs(job, jobsEncountered))
 			}
 			//	else totalDuration <- jobListDuration(L)
 			else {
@@ -122,10 +122,7 @@ object SoftwarePlatform {
 
 	// Helper method for bestValidInsertionAroundSlot, finds the minimum duration schedule out of a list of schedules
 	def minimumDurationSchedule(schedules: List[ListBuffer[ListBuffer[Job]]]): ListBuffer[ListBuffer[Job]] = {
-		if (schedules.isEmpty) {
-			emptySchedule
-		}
-		else {
+		if (schedules.nonEmpty) {
 			var minDurationSchedule = schedules.head
 			var minDuration = jobListDuration(schedules.head)
 
@@ -139,12 +136,15 @@ object SoftwarePlatform {
 
 			minDurationSchedule
 		}
+		else {
+			emptySchedule
+		}
 	}
 
 	/* Input: Job 'job', a set of assignments 'Jobs'
 	 * Output: Returns a set of jobs which forms a circular dependency
 	 */
-	def circularDependency(job: Job, jobs: List[Job]): List[Job] = {
+	def invalidDependentJobs(job: Job, jobs: List[Job]): List[Job] = {
 		// Let l be a new list
 		val circularJobs = ListBuffer[Job]()
 
