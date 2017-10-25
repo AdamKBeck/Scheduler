@@ -107,11 +107,7 @@ object SoftwarePlatform {
 		schedules += insertBefore += insertParallel += insertAfter
 
 		// Remove invalid schedules
-		for (s <- schedules) {
-			if (!isValid(s)) {
-				schedules -= s
-			}
-		}
+		schedules.filter(isValid(_))
 
 		// Return the insertion of least duration, or an empty list if nothing was valid
 		if (schedules.isEmpty) {
