@@ -991,8 +991,78 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 
 	// estimateDeliveryTime testing
 	// Structured Basis: nominal case, all boolean values true
-	
+	// Bad data: empty list
+	behavior of "estimateDeliveryTime"
+	it should "test nominal, bad data empty list" in {
+		val jobsList: List[Job] = Nil
 
+		val estimateDeliveryTime = PrivateMethod[Int]('estimateDeliveryTime)
+		val time = SoftwarePlatform invokePrivate estimateDeliveryTime(jobsList)
+
+		assert(time == 0)
+	}
+
+	// Structured Basis, if statement false
+	// Good data: average config, 3 or more jobs
+	it should "test a nonEmpty list of jobs" in {
+		val jobsList = List(Job(Set(), 3, 1), Job(Set(), 4, 3), Job(Set(), 5, 2))
+
+
+		val estimateDeliveryTime = PrivateMethod[Int]('estimateDeliveryTime)
+		val time = SoftwarePlatform invokePrivate estimateDeliveryTime(jobsList)
+
+		assert(time == 5)
+	}
+
+	// Structured Basis, for statement false
+	// Good data: min config, list of 1 job
+	it should "test a list of only 1 job" in {
+		val jobsList = List(Job(Set(), 3, 1))
+
+		val estimateDeliveryTime = PrivateMethod[Int]('estimateDeliveryTime)
+		val time = SoftwarePlatform invokePrivate estimateDeliveryTime(jobsList)
+
+		assert(time == 3)
+	}
+
+	// Structured Basis, second if statement true
+	// Bad data: circular dependency of the jobs in the lsit
+	it should "test a circular dependency" in {
+		val dependencyA = Dependency(Dependency.END_BEGIN, 1, 2)
+		val dependencyB = Dependency(Dependency.END_BEGIN, 2, 1)
+
+		val jobsList = List(Job(Set(dependencyA), 3, 1), Job(Set(dependencyB), 4, 2))
+
+		val estimateDeliveryTime = PrivateMethod[Int]('estimateDeliveryTime)
+
+		assertThrows[DependencyException.CIRCULAR_DEPENDENCY] {
+			val time = SoftwarePlatform invokePrivate estimateDeliveryTime(jobsList)
+		}
+	}
+
+	// Structured Basis, if statement false
+	// Good data: max config, 100 jobs
+	it should "test a non-circular Dependency max config list" in {
+		var list = List[Job](Job(Set(), 1, 1), Job(Set(), 3, 1))
+
+		val buffer = ListBuffer[Job]()
+
+		for (i <- 1 to 100) {
+			buffer += Job(Set(), i, i)
+		}
+
+		val estimateDeliveryTime = PrivateMethod[Int]('estimateDeliveryTime)
+		val time = SoftwarePlatform invokePrivate estimateDeliveryTime(buffer.toList)
+
+		assert(time == 100)
+	}
+
+
+	// Stress test
+//	behavior of "Stress test"
+//	it should "get the estimated delivery time or a circular exception for generated schedules" in {
+//		???
+//	}
 }
 
 

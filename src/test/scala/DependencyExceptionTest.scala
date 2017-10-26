@@ -2,7 +2,7 @@ package scheduler
 
 import org.scalatest.FlatSpec
 
-class DependencyTest extends FlatSpec {
+class DependencyExceptionTest extends FlatSpec {
 
 	behavior of "dependencyType"
 	it should "return a correct Dependency.Type case object" in {
