@@ -404,7 +404,7 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	}
 
 	// areParallelDependenciesValid testing
-	// Structured Basis: nominal case, all coolean conditions are true
+	// Structured Basis: nominal case, all boolean conditions are true
 	// Good data: min configuration, list of one job
 	behavior of "areParallelDependeneciesValid"
 	it should "test nominal, min normal configuration" in {
@@ -479,6 +479,95 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 		val validityResult = SoftwarePlatform invokePrivate areParallelDependenciesValid(job1, jobsList)
 		assert(validityResult)
 	}
+
+	// isValid testing
+	// Structured Basis: nominal case, all boolean conditions true
+	// Good data: average case, a few jobs, some parallel, some sequential, with dependencies
+	behavior of "isValid"
+	it should "test nominal" in {
+		schedule = clearSchedule
+		val dependencyA = Dependency(Dependency.END_BEGIN, 1, 2)
+		val dependencyB = Dependency(Dependency.BEGIN_BEGIN, 3, 2)
+
+		val jobA = Job(Set(dependencyA), 6, 1)
+		val jobB = Job(Set(), 6, 2)
+		val jobC = Job(Set(dependencyB), 6, 3)
+
+		appendJobToSchedule(jobC, schedule)
+		appendJobToSchedule(jobB, schedule)
+		insertJobToSchedule(jobA, schedule, 1)
+
+		val isValid = PrivateMethod[Boolean]('isValid)
+		val validityResult = SoftwarePlatform invokePrivate isValid(schedule)
+		assert(!validityResult)
+	}
+
+	// Structured Basis: first condition false, second condition true
+	it should "test with valid parallel dependencies, invalid preceding dependnecies" in {
+		schedule = clearSchedule
+		val dependencyA = Dependency(Dependency.END_BEGIN, 1, 2)
+
+		val jobA = Job(Set(dependencyA), 6, 1)
+		val jobB = Job(Set(), 6, 2)
+		val jobC = Job(Set(), 6, 3)
+
+		appendJobToSchedule(jobC, schedule)
+		appendJobToSchedule(jobB, schedule)
+		insertJobToSchedule(jobA, schedule, 1)
+
+		val isValid = PrivateMethod[Boolean]('isValid)
+		val validityResult = SoftwarePlatform invokePrivate isValid(schedule)
+		assert(!validityResult)
+	}
+
+	// Structured Basis: first condition true, second condition false
+	it should "test with invalid parallel dependencies, valid preceding dependnecies" in {
+		schedule = clearSchedule
+		val dependency = Dependency(Dependency.END_END, 3, 2)
+
+		val jobA = Job(Set(), 6, 1)
+		val jobB = Job(Set(), 6, 2)
+		val jobC = Job(Set(dependency), 4, 3)
+
+		appendJobToSchedule(jobC, schedule)
+		appendJobToSchedule(jobB, schedule)
+		insertJobToSchedule(jobA, schedule, 1)
+
+		val isValid = PrivateMethod[Boolean]('isValid)
+		val validityResult = SoftwarePlatform invokePrivate isValid(schedule)
+		assert(!validityResult)
+	}
+
+	// Structured Basis: if statement false
+	// Good data: min nominal case, a schedule of 1 job
+	it should "test with valid parallel dependencies, valid preceding dependencies" in {
+		schedule = clearSchedule
+		appendJobToSchedule(job1, schedule)
+
+		val isValid = PrivateMethod[Boolean]('isValid)
+		val validityResult = SoftwarePlatform invokePrivate isValid(schedule)
+		assert(validityResult)
+	}
+
+	// Bad data: Empty schedule
+	it should "test with a Nil schedule" in {
+		val isValid = PrivateMethod[Boolean]('isValid)
+		val validityResult = SoftwarePlatform invokePrivate isValid(ListBuffer[ListBuffer[Job]]())
+		assert(validityResult)
+	}
+
+	// Good data: max nominal case, 100 jobs
+	it should "test with max normal configuration, 100 jobs" in {
+		for (i <- 3 to 100) {
+			appendJobToSchedule(Job(Set(), 4, i), schedule)
+		}
+
+		val isValid = PrivateMethod[Boolean]('isValid)
+		val validityResult = SoftwarePlatform invokePrivate isValid(schedule)
+		assert(validityResult)
+
+	}
+
 }
 
 
