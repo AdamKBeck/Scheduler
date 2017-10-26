@@ -10,6 +10,9 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	private var job1 = Job(Set(), 4, 1) // Order matters as job1 comes first. Used for testing below
 	private var job2 = Job(Set(), 5, 2)
 
+	/* I often need to create a cleared schedule for these testing classes. So why not use emptySchedule()?
+	 * I believe it's semantic coupling to assume that emptySchedule works, as we are testing it. Therefore,
+	 * I made the same method in here, but renamed to a similar but different name so I'm able to test emptySchedule */
 	private def clearSchedule = ListBuffer[ListBuffer[Job]]()
 
 	// Sets up a simple schedule with a 2 non-parallel jobs, no dependencies
@@ -106,6 +109,25 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 
 	// Structured basis: the first if is false
 	it should "test with no Begin-End dependency" in {
+		val isPrecedingBeginEndValid = PrivateMethod[Boolean]('isPrecedingBeginEndValid)
+		val validityResult = SoftwarePlatform invokePrivate isPrecedingBeginEndValid(job2, job1, schedule, 0)
+		assert(validityResult)
+	}
+
+	// Bad data: subschedule is Nil
+	it should "test with bad data: Nil subschedule" in {
+		val isPrecedingBeginEndValid = PrivateMethod[Boolean]('isPrecedingBeginEndValid)
+		schedule = clearSchedule
+		val validityResult = SoftwarePlatform invokePrivate isPrecedingBeginEndValid(job2, job1, schedule, 0)
+		assert(validityResult)
+	}
+
+	// Good data: max normal configuration, 100 jobs
+	it should "test with max normal configuration: 100 jobs" in {
+		for (i <- 0 to 98) {
+			val job = Job(Set(), 4, i)
+			appendJobToSchedule(job, schedule)
+		}
 		val isPrecedingBeginEndValid = PrivateMethod[Boolean]('isPrecedingBeginEndValid)
 		val validityResult = SoftwarePlatform invokePrivate isPrecedingBeginEndValid(job2, job1, schedule, 0)
 		assert(validityResult)
