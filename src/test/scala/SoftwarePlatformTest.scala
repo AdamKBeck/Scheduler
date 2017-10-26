@@ -689,6 +689,105 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 		&& list.contains(jobD))
 	}
 
+	// minimumDurationSchedule testing
+	// Structured Basis: nominal case, all boolean conditions true
+	// Good data: min config, 2 schedules
+	behavior of "minDurationSchedule"
+	it should "test nominal, min config, 2 schedules" in {
+		val scheduleA = schedule
+		val scheduleB = clearSchedule
+		appendJobToSchedule(Job(Set(), 23, 4), scheduleB)
+
+		val scheduleList = List(scheduleB, scheduleA)
+
+		val minimumDurationSchedule = PrivateMethod[ListBuffer[ListBuffer[Job]]]('minimumDurationSchedule)
+		val list = SoftwarePlatform invokePrivate minimumDurationSchedule(scheduleList)
+		assert(list == scheduleA)
+	}
+
+	// Structured Basis: First if statement false
+	// Bad data: Empty schedules list
+	it should "test with Nil schedules" in {
+		val nilSchedules: List[ListBuffer[ListBuffer[Job]]] = Nil
+
+		val minimumDurationSchedule = PrivateMethod[ListBuffer[ListBuffer[Job]]]('minimumDurationSchedule)
+		val list = SoftwarePlatform invokePrivate minimumDurationSchedule(nilSchedules)
+		assert(list == clearSchedule)
+	}
+
+	// Structured Basis: For loop condition false
+	// Bad data: only one schedule
+	it should "Test one schedule, list size of 1" in {
+		val schedule = clearSchedule
+		appendJobToSchedule(Job(Set(), 23, 4), schedule)
+
+		val scheduleList = List(schedule)
+
+		val minimumDurationSchedule = PrivateMethod[ListBuffer[ListBuffer[Job]]]('minimumDurationSchedule)
+		val list = SoftwarePlatform invokePrivate minimumDurationSchedule(scheduleList)
+		assert(list == schedule)
+	}
+
+	// Structured Basis: second if statement false
+	// Boundary condition: duration > minDuration
+	// Good data: average normal case, more than 1 schedule, not too many
+	it should "Test with first schedule being the minimum, duration greater than minDuration, average normal case" in {
+		val scheduleA = schedule
+		val scheduleB = clearSchedule
+		appendJobToSchedule(Job(Set(), 23, 4), scheduleB)
+
+		val scheduleList = List(scheduleA, scheduleB)
+
+		val minimumDurationSchedule = PrivateMethod[ListBuffer[ListBuffer[Job]]]('minimumDurationSchedule)
+		val list = SoftwarePlatform invokePrivate minimumDurationSchedule(scheduleList)
+		assert(list == scheduleA)
+	}
+
+	// Boundary condition: duration = minDuration
+	it should "Test with first schedule being the minimum, duration equals minDuration" in {
+		val scheduleA = clearSchedule
+		appendJobToSchedule(Job(Set(), 4, 1), scheduleA)
+		val scheduleB = clearSchedule
+		appendJobToSchedule(Job(Set(), 4, 4), scheduleB)
+
+		val scheduleList = List(scheduleA, scheduleB)
+
+		val minimumDurationSchedule = PrivateMethod[ListBuffer[ListBuffer[Job]]]('minimumDurationSchedule)
+		val list = SoftwarePlatform invokePrivate minimumDurationSchedule(scheduleList)
+		assert(list == scheduleA)
+	}
+
+	// Boundary condition: duration < minDuration
+	it should "Test with first schedule being the minimum, duration less than minDuration" in {
+		val scheduleA = clearSchedule
+		appendJobToSchedule(Job(Set(), 4, 1), scheduleA)
+
+		val scheduleB = clearSchedule
+		appendJobToSchedule(Job(Set(), 3, 4), scheduleB)
+
+		val scheduleList = List(scheduleA, scheduleB)
+
+		val minimumDurationSchedule = PrivateMethod[ListBuffer[ListBuffer[Job]]]('minimumDurationSchedule)
+		val list = SoftwarePlatform invokePrivate minimumDurationSchedule(scheduleList)
+		assert(list == scheduleB)
+	}
+
+	// Good data: maximum normal config, 20 schedules
+	it should "Test with max normal config, 20 schedules" in {
+		val buffer = ListBuffer[ListBuffer[ListBuffer[Job]]]()
+		buffer += clearSchedule
+		val job = Job(Set(), 0, 1)
+		appendJobToSchedule(job, buffer(0))
+
+		for (i <- 1 to 20) {
+			buffer += clearSchedule
+			appendJobToSchedule(Job(Set(), i, i), buffer(i))
+		}
+
+		val minimumDurationSchedule = PrivateMethod[ListBuffer[ListBuffer[Job]]]('minimumDurationSchedule)
+		val list = SoftwarePlatform invokePrivate minimumDurationSchedule(buffer.toList)
+		assert(list(0)(0) == job)
+	}
 }
 
 
