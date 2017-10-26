@@ -191,6 +191,27 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 		val validityResult = SoftwarePlatform invokePrivate isPrecedingDurationsValid(job2, job1, schedule, 0)
 		assert(validityResult)
 	}
+
+	// Bad data: subschedule is Nil
+	it should "test with bad data: Nil subschedule" in {
+		val isPrecedingDurationsValid = PrivateMethod[Boolean]('isPrecedingDurationsValid)
+		schedule = clearSchedule
+		val validityResult = SoftwarePlatform invokePrivate isPrecedingDurationsValid(job2, job1, schedule, 0)
+		assert(validityResult)
+	}
+
+	// Good data: max normal configuration, 100 jobs
+	it should "test with max normal configuration: 100 jobs" in {
+		for (i <- 0 to 98) {
+			val job = Job(Set(), 4, i)
+			appendJobToSchedule(job, schedule)
+		}
+		val isPrecedingDurationsValid = PrivateMethod[Boolean]('isPrecedingDurationsValid)
+		val validityResult = SoftwarePlatform invokePrivate isPrecedingDurationsValid(job2, job1, schedule, 0)
+		assert(validityResult)
+	}
+
+
 }
 
 
