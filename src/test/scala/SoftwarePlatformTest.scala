@@ -4,11 +4,11 @@ import org.scalatest.{BeforeAndAfterEach, FlatSpec, PrivateMethodTester}
 
 import scala.collection.mutable.ListBuffer
 
-class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach{
+class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with PrivateMethodTester{
 
-	var schedule = emptySchedule
+	var schedule = clearSchedule
 
-	private def emptySchedule = ListBuffer[ListBuffer[Job]]()
+	private def clearSchedule = ListBuffer[ListBuffer[Job]]()
 
 	// Sets up a simple schedule with a 2 non-parallel jobs, no dependencies
 	override def beforeEach(): Unit = {
@@ -19,6 +19,7 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach{
 	}
 
 	override def afterEach(): Unit = {
+		schedule = clearSchedule
 	}
 
 	// Appends a job to the end of a schedule in new separate list
@@ -32,5 +33,11 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach{
 	}
 
 	// emptySchedule testing
-	
+	// Structured Basis: nominal case, nothing
+	behavior of "emptySchedule"
+	it should "Return a schedule containing no elements" in {
+		val s = PrivateMethod[ListBuffer[ListBuffer[Job]]]('emptySchedule)
+		val schedule = SoftwarePlatform invokePrivate s()
+		assert(schedule.size == 0)
+	}
 }
