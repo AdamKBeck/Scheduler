@@ -348,7 +348,8 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	}
 
 	// Bad data: subschedule is Nil
-	it should "test with bad data: Nil subschedule" in {
+	// Structured Basis: first for condition is false
+	it should "test with bad data: Nil subschedule, no jobs in schedule" in {
 		val arePrecedingDependenciesValid = PrivateMethod[Boolean]('arePrecedingDependenciesValid)
 		schedule = clearSchedule
 		val validityResult = SoftwarePlatform invokePrivate arePrecedingDependenciesValid(schedule, job2)
@@ -356,7 +357,8 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	}
 
 	// Good data: max normal configuration, 100 jobs
-	it should "test with max normal configuration: 100 jobs" in {
+	// Structured Basis: second for condition is false
+	it should "test with max normal configuration: 100 jobs, no dependencies" in {
 		for (i <- 0 to 98) {
 			val job = Job(Set(), 4, i)
 			appendJobToSchedule(job, schedule)
@@ -463,7 +465,8 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	}
 
 	// Bad data: empty list
-	it should "test with Nil jobList" in {
+	// Structured Basis: for condition false
+	it should "test with Nil jobList, no jobs in job list" in {
 		val areParallelDependenciesValid = PrivateMethod[Boolean]('areParallelDependenciesValid)
 		val validityResult = SoftwarePlatform invokePrivate areParallelDependenciesValid(job1, ListBuffer())
 		assert(validityResult)
@@ -484,7 +487,7 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	// Structured Basis: nominal case, all boolean conditions true
 	// Good data: average case, a few jobs, some parallel, some sequential, with dependencies
 	behavior of "isValid"
-	it should "test nominal" in {
+	it should "test nominal, average case" in {
 		schedule = clearSchedule
 		val dependencyA = Dependency(Dependency.END_BEGIN, 1, 2)
 		val dependencyB = Dependency(Dependency.BEGIN_BEGIN, 3, 2)
@@ -550,7 +553,8 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	}
 
 	// Bad data: Empty schedule
-	it should "test with a Nil schedule" in {
+	// Structured basis: no jobs in schedule
+	it should "test with a Nil schedule, no jobs in schedule" in {
 		val isValid = PrivateMethod[Boolean]('isValid)
 		val validityResult = SoftwarePlatform invokePrivate isValid(ListBuffer[ListBuffer[Job]]())
 		assert(validityResult)
@@ -565,7 +569,55 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 		val isValid = PrivateMethod[Boolean]('isValid)
 		val validityResult = SoftwarePlatform invokePrivate isValid(schedule)
 		assert(validityResult)
+	}
 
+	//jobListDuration testing
+	// Structured Basis: nominal case, all boolean conditions true
+	// Good data: min nominal case, 1 job in the schedule
+	behavior of "jobListDuration"
+	it should "test nominal, min normal configuration" in {
+		schedule = clearSchedule
+		appendJobToSchedule(Job(Set(), 4, 1), schedule)
+
+		val jobListDuration = PrivateMethod[Int]('jobListDuration)
+		val duration = SoftwarePlatform invokePrivate jobListDuration(schedule)
+		assert(duration == 4)
+	}
+
+	// Structured Basis: if statement false
+	// Good data: average case. A few jobs in both parallel and sequential with each other
+	it should "test with more than one job in the schedule" in {
+		schedule = clearSchedule
+		appendJobToSchedule(Job(Set(), 4, 1), schedule)
+		appendJobToSchedule(Job(Set(), 5, 2), schedule)
+		insertJobToSchedule(Job(Set(), 5, 3), schedule, 0)
+
+		val jobListDuration = PrivateMethod[Int]('jobListDuration)
+		val duration = SoftwarePlatform invokePrivate jobListDuration(schedule)
+		assert(duration == 10)
+	}
+
+	// Structured Basis: for condition false
+	// Bad data: No jobs in schedule
+	it should "test with Nil schedule, no jobs in schedule" in {
+		schedule = clearSchedule
+
+		val jobListDuration = PrivateMethod[Int]('jobListDuration)
+		val duration = SoftwarePlatform invokePrivate jobListDuration(schedule)
+		assert(duration == 0)
+
+	}
+
+	// Good data: max nominal case, 100 jobs
+	it should "test with max nominal case, 100 jobs" in {
+		schedule = clearSchedule
+		for (i <- 1 to 100) {
+			appendJobToSchedule(Job(Set(), 1, i), schedule)
+		}
+
+		val jobListDuration = PrivateMethod[Int]('jobListDuration)
+		val duration = SoftwarePlatform invokePrivate jobListDuration(schedule)
+		assert(duration == 100)
 	}
 
 }
