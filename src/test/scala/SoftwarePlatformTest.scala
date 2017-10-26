@@ -620,6 +620,75 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 		assert(duration == 100)
 	}
 
+	//invalidDependentJobs testing
+	// Structured Basis: nominal case, all boolean conditions true
+	// Good data: min configuration, 1 job depends on another job, nothing else
+	behavior of "invalidDependentJobs"
+	it should "test nominal, min config" in {
+		val dependency = Dependency(Dependency.BEGIN_BEGIN, 1, 2)
+
+		val jobA = Job(Set(dependency), 4, 1)
+		val jobB = Job(Set(), 5, 2)
+
+		val jobsList = List(jobA)
+
+		val invalidDependentJobs = PrivateMethod[List[Job]]('invalidDependentJobs)
+		val list = SoftwarePlatform invokePrivate invalidDependentJobs(jobB, jobsList)
+		assert(list.contains(jobA) && list.size == 2)
+	}
+
+	// Structured Basis: if statement false
+	// Bad data: No jobs in jobList relate to the passed job in question
+	it should "test with no jobs relating to the given job" in {
+		val dependency = Dependency(Dependency.BEGIN_BEGIN, 1, 3)
+
+		val jobA = Job(Set(dependency), 4, 1)
+		val jobB = Job(Set(), 5, 2)
+
+		val jobsList = List(jobA)
+
+		val invalidDependentJobs = PrivateMethod[List[Job]]('invalidDependentJobs)
+		val list = SoftwarePlatform invokePrivate invalidDependentJobs(jobB, jobsList)
+		assert(list.size == 1 && list.contains(jobB))
+	}
+
+	// Structured Basis: for condition is false
+	// Bad data: Nil list
+	it should "test with Nil list, no jobs in the job list" in {
+		val jobA = Job(Set(), 5, 2)
+		val jobsList = List()
+
+		val invalidDependentJobs = PrivateMethod[List[Job]]('invalidDependentJobs)
+		val list = SoftwarePlatform invokePrivate invalidDependentJobs(jobA, jobsList)
+		assert(list.size == 1 && list.contains(jobA))
+
+	}
+
+	// Good data: average config case, a few jobs that relate to the given job
+	// Good data: max config case, 100 jobs
+	it should "test with average relation nominal case, max #jobs normal config" in {
+		val dependencyA = Dependency(Dependency.BEGIN_BEGIN, 1, 4)
+		val dependencyB = Dependency(Dependency.BEGIN_BEGIN, 2, 4)
+		val dependencyC = Dependency(Dependency.BEGIN_BEGIN, 3, 4)
+
+		val jobA = Job(Set(dependencyA), 4, 1)
+		val jobB = Job(Set(dependencyB), 4, 2)
+		val jobC = Job(Set(dependencyC), 4, 3)
+		val jobD = Job(Set(), 4, 4)
+
+		val jobsList = List(jobA, jobB, jobC)
+
+
+		for (i <- 5 to 100) {
+			Job(Set(), 4, i) :: jobsList
+		}
+
+		val invalidDependentJobs = PrivateMethod[List[Job]]('invalidDependentJobs)
+		val list = SoftwarePlatform invokePrivate invalidDependentJobs(jobD, jobsList)
+		assert(list.size == 4 && list.contains(jobA) && list.contains(jobB) && list.contains(jobC)
+		&& list.contains(jobD))
+	}
+
 }
 
 
