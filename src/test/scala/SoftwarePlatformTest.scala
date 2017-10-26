@@ -7,8 +7,11 @@ import scala.collection.mutable.ListBuffer
 class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with PrivateMethodTester{
 
 	private var schedule = clearSchedule
+
 	private var job1 = Job(Set(), 4, 1) // Order matters as job1 comes first. Used for testing below
 	private var job2 = Job(Set(), 5, 2)
+	private var job3 = Job(Set(), 6, 3)
+	private var job4 = Job(Set(), 6, 4)
 
 	/* I often need to create a cleared schedule for these testing classes. So why not use emptySchedule()?
 	 * I believe it's semantic coupling to assume that emptySchedule works, as we are testing it. Therefore,
@@ -19,6 +22,19 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	override def beforeEach(): Unit = {
 		appendJobToSchedule(job1, schedule)
 		appendJobToSchedule(job2, schedule)
+
+		val dependencyA = Dependency(Dependency.END_END, 3, 4)
+		val dependencyB = Dependency(Dependency.END_BEGIN, 3, 4)
+		val dependencyC = Dependency(Dependency.BEGIN_END, 3, 4)
+		val dependencyD = Dependency(Dependency.BEGIN_BEGIN, 3, 4)
+
+		val dependencyE = Dependency(Dependency.END_END, 3, 4)
+		val dependencyF = Dependency(Dependency.END_BEGIN, 3, 4)
+		val dependencyG = Dependency(Dependency.BEGIN_END, 3, 4)
+		val dependencyH = Dependency(Dependency.BEGIN_BEGIN, 3, 4)
+
+		job3 = Job(Set(dependencyA, dependencyB, dependencyC, dependencyD), 6, 1)
+		job4  = Job(Set(dependencyE, dependencyF, dependencyG, dependencyH), 6, 2)
 	}
 
 	override def afterEach(): Unit = {
@@ -306,13 +322,13 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	}
 
 	// arePrecedingDependenciesValid testing
-	// StructuredBasis: nominal case, all boolean conditions are true
+	// Structured basis: nominal case, all boolean conditions are true
 	// Good data: minimum normal config, 1 job
 	behavior of "arePrecedingDependenciesValid"
 	it should "test nominal, min normal config" in {
-		val dependencyB = Dependency(Dependency.BEGIN_BEGIN, 1, 2)
+		val dependency = Dependency(Dependency.BEGIN_BEGIN, 1, 2)
 
-		val jobA = Job(Set(dependencyB), 6, 1)
+		val jobA = Job(Set(dependency), 6, 1)
 		val jobB = Job(Set(), 6, 2)
 
 		schedule = clearSchedule
@@ -349,6 +365,47 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 		val validityResult = SoftwarePlatform invokePrivate arePrecedingDependenciesValid(schedule, job2)
 		assert(validityResult)
 	}
+
+	//isParallelEndEndValid testing
+	// Structured Basis: nominal case, all boolean conditions are true
+	// Good data: normal configuration, one END_END dependency on a job
+	behavior of "isParallelEndEndValid"
+	it should "test nominal, normal configuration" in {
+		val dependency = Dependency(Dependency.END_END, 1, 2)
+
+		val jobA = Job(Set(dependency), 6, 1)
+		val jobB = Job(Set(), 6, 2)
+
+		schedule = clearSchedule
+		appendJobToSchedule(jobA, schedule)
+		insertJobToSchedule(jobB, schedule, 0)
+
+		val isParallelEndEndValid = PrivateMethod[Boolean]('isParallelEndEndValid)
+		val validityResult = SoftwarePlatform invokePrivate isParallelEndEndValid(jobA, jobB)
+		assert(validityResult)
+	}
+
+	// Structured Basis: if statement false, no end end dependency
+	// Good data: minimum configuration, two jobs with no dependencies each
+	it should "test with no END_END dependency, min config" in {
+		val isParallelEndEndValid = PrivateMethod[Boolean]('isParallelEndEndValid)
+		val validityResult = SoftwarePlatform invokePrivate isParallelEndEndValid(job1, job2)
+		assert(validityResult)
+	}
+
+	// Bad data: 4*n dependencies
+	it should "test with bad data: 4*n dependencies" in {
+		appendJobToSchedule(job3, schedule)
+		insertJobToSchedule(job4, schedule, 0)
+
+		val isParallelEndEndValid = PrivateMethod[Boolean]('isParallelEndEndValid)
+		val validityResult = SoftwarePlatform invokePrivate isParallelEndEndValid(job3, job4)
+		assert(validityResult)
+	}
+
+
+
+
 
 
 }
