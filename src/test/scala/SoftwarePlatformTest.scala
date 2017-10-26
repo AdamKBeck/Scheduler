@@ -45,7 +45,7 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	// Structured Basis: nominal case, all boolean conditions true
 	// Good data: minimum normal configuration: 2 jobs
 	behavior of "isPrecedingEndEndValid"
-	it should "test nominal" in {
+	it should "test nominal, min normal config" in {
 		val dependency = Dependency(Dependency.END_END, 1, 2)
 
 		val jobA = Job(Set(dependency), 6, 1)
@@ -83,6 +83,31 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 		}
 		val isPrecedingEndEndValid = PrivateMethod[Boolean]('isPrecedingEndEndValid)
 		val validityResult = SoftwarePlatform invokePrivate isPrecedingEndEndValid(job2, job1, schedule, 0)
+		assert(validityResult)
+	}
+
+	// isPrecedingBeginEndValid testing
+	// StructuredBasis: nominal case: all boolean conditions are true
+	// Good data: minimum normal configuration, 2 jobs
+	behavior of "isPrecedingBeginEndValid"
+	it should "test nominal, min normal config" in {
+		val dependency = Dependency(Dependency.BEGIN_END, 1, 2)
+
+		val jobA = Job(Set(dependency), 6, 1)
+		val jobB = Job(Set(), 6, 2)
+		schedule = clearSchedule
+		appendJobToSchedule(jobA, schedule)
+		appendJobToSchedule(jobB, schedule)
+
+		val isPrecedingBeginEndValid = PrivateMethod[Boolean]('isPrecedingBeginEndValid)
+		val validityResult = SoftwarePlatform invokePrivate isPrecedingBeginEndValid(jobB, jobA, schedule, 0)
+		assert(validityResult)
+	}
+
+	// Structured basis: the first if is false
+	it should "test with no Begin-End dependency" in {
+		val isPrecedingBeginEndValid = PrivateMethod[Boolean]('isPrecedingBeginEndValid)
+		val validityResult = SoftwarePlatform invokePrivate isPrecedingBeginEndValid(job2, job1, schedule, 0)
 		assert(validityResult)
 	}
 }
