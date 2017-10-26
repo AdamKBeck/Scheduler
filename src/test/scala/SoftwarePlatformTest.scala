@@ -6,16 +6,16 @@ import scala.collection.mutable.ListBuffer
 
 class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with PrivateMethodTester{
 
-	var schedule = clearSchedule
+	private var schedule = clearSchedule
+	private var job1 = Job(Set(), 4, 1) // Order matters as job1 comes first. Used for testing below
+	private var job2 = Job(Set(), 5, 2)
 
 	private def clearSchedule = ListBuffer[ListBuffer[Job]]()
 
 	// Sets up a simple schedule with a 2 non-parallel jobs, no dependencies
 	override def beforeEach(): Unit = {
-		val jobA = Job(Set(), 7, 1)
-		val jobB = Job(Set(), 3, 2)
-		appendJobToSchedule(jobA, schedule)
-		appendJobToSchedule(jobB, schedule)
+		appendJobToSchedule(job1, schedule)
+		appendJobToSchedule(job2, schedule)
 	}
 
 	override def afterEach(): Unit = {
@@ -23,21 +23,50 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	}
 
 	// Appends a job to the end of a schedule in new separate list
-	def appendJobToSchedule(job: Job, schedule: ListBuffer[ListBuffer[Job]]): Unit = {
+	private def appendJobToSchedule(job: Job, schedule: ListBuffer[ListBuffer[Job]]): Unit = {
 		schedule += ListBuffer[Job](job)
 	}
 
 	// Appends a job to a list of given index in a schedule
-	def insertJobToSchedule(job: Job, schedule: ListBuffer[ListBuffer[Job]], index: Int): Unit = {
+	private def insertJobToSchedule(job: Job, schedule: ListBuffer[ListBuffer[Job]], index: Int): Unit = {
 		schedule(index) += job
 	}
 
 	// emptySchedule testing
 	// Structured Basis: nominal case, nothing
 	behavior of "emptySchedule"
-	it should "Return a schedule containing no elements" in {
-		val s = PrivateMethod[ListBuffer[ListBuffer[Job]]]('emptySchedule)
-		val schedule = SoftwarePlatform invokePrivate s()
-		assert(schedule.size == 0)
+	it should "test nominal" in {
+		val emptySchedule = PrivateMethod[ListBuffer[ListBuffer[Job]]]('emptySchedule)
+		val schedule = SoftwarePlatform invokePrivate emptySchedule()
+		assert(schedule.isEmpty)
 	}
+
+	// isPrecedingEndEndValid testing
+	// Structured Basis: nominal case, all boolean conditions true
+	behavior of "isPrecedingEndEndValid"
+	it should "test nominal" in {
+		val dependency = Dependency(Dependency.END_END, 1, 2)
+
+		val jobA = Job(Set(dependency), 6, 1)
+		val jobB = Job(Set(), 6, 2)
+		schedule = clearSchedule
+		appendJobToSchedule(jobA, schedule)
+		appendJobToSchedule(jobB, schedule)
+
+		val isPrecedingEndEndValid = PrivateMethod[Boolean]('isPrecedingEndEndValid)
+		val validityResult = SoftwarePlatform invokePrivate isPrecedingEndEndValid(jobB, jobA, schedule, 0)
+		assert(!validityResult)
+	}
+
+	// Structured Basis: the first if is false.
+	it should "test with no End-End dependency" in {
+		val isPrecedingEndEndValid = PrivateMethod[Boolean]('isPrecedingEndEndValid)
+		val validityResult = SoftwarePlatform invokePrivate isPrecedingEndEndValid(job2, job1, schedule, 0)
+		assert(validityResult)
+	}
+
 }
+
+
+
+
