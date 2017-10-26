@@ -43,6 +43,7 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 
 	// isPrecedingEndEndValid testing
 	// Structured Basis: nominal case, all boolean conditions true
+	// Good data: minimum normal configuration: 2 jobs
 	behavior of "isPrecedingEndEndValid"
 	it should "test nominal" in {
 		val dependency = Dependency(Dependency.END_END, 1, 2)
@@ -65,6 +66,25 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 		assert(validityResult)
 	}
 
+	// Bad data: subschedule is Nil
+	it should "test with bad data: Nil subschedule" in {
+		val isPrecedingEndEndValid = PrivateMethod[Boolean]('isPrecedingEndEndValid)
+		schedule = clearSchedule
+		val validityResult = SoftwarePlatform invokePrivate isPrecedingEndEndValid(job2, job1, schedule, 0)
+		assert(validityResult)
+	}
+
+
+	// Good data: max normal configuration, 100 jobs
+	it should "test with max normal configuration: 100 jobs" in {
+		for (i <- 0 to 98) {
+			val job = Job(Set(), 4, i)
+			appendJobToSchedule(job, schedule)
+		}
+		val isPrecedingEndEndValid = PrivateMethod[Boolean]('isPrecedingEndEndValid)
+		val validityResult = SoftwarePlatform invokePrivate isPrecedingEndEndValid(job2, job1, schedule, 0)
+		assert(validityResult)
+	}
 }
 
 
