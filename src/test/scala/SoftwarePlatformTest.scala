@@ -1,8 +1,9 @@
 package scheduler
 
 import org.scalatest.{BeforeAndAfterEach, FlatSpec, PrivateMethodTester}
-
+import scala.util.Random
 import scala.collection.mutable.ListBuffer
+
 
 class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with PrivateMethodTester{
 
@@ -1059,12 +1060,52 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 
 
 	// Stress test
-//	behavior of "Stress test"
-//	it should "get the estimated delivery time or a circular exception for generated schedules" in {
-//		???
-//	}
+	behavior of "Stress test"
+	it should "throw a circular dependency exception for randomly generated schedules with circular dependencies with dummy extras" in {
+		schedule = clearSchedule
+
+		for (a <- 1 to 10) {
+			val dependencyA = Dependency(Dependency.END_BEGIN, 1, a)
+			val listOfJobs= ListBuffer[Job]()
+			listOfJobs += Job(Set(dependencyA), 3, 1)
+
+			for (i <- 1 to 10) {
+				// Force a circular dependency
+				if (i == a) {
+					val dependencyB = Dependency(Dependency.END_BEGIN, a, 1)
+					listOfJobs += Job(Set(dependencyB), 4, a)
+				}
+				// Add random jobs to our list
+				else {
+					listOfJobs += Job(Set(), i, a)
+				}
+			}
+
+			val estimateDeliveryTime = PrivateMethod[Int]('estimateDeliveryTime)
+			assertThrows[DependencyException.CIRCULAR_DEPENDENCY] {
+				val time = SoftwarePlatform invokePrivate estimateDeliveryTime(listOfJobs.toList)
+			}
+		}
+	}
+
+	it should "get the estimated delivery time for randomly generated parallel jobs" in {
+		schedule = clearSchedule
+		var maxDuration = 0
+
+		val listOfJobs = ListBuffer[Job]()
+
+		// Generate a large amount of parallel jobs, find the largest one
+		for (a <- 1 to 100) {
+			val random = Random.nextInt(500)
+			if (random > maxDuration) {
+				maxDuration = random
+			}
+			listOfJobs += Job(Set(), random, a)
+		}
+
+		val estimateDeliveryTime = PrivateMethod[Int]('estimateDeliveryTime)
+		val time = SoftwarePlatform invokePrivate estimateDeliveryTime(listOfJobs.toList)
+
+		assert(time == maxDuration)
+	}
 }
-
-
-
-
