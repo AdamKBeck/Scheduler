@@ -305,7 +305,31 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 		assert(validityResult)
 	}
 
-	
+	// arePrecedingDependenciesValid testing
+	// StructuredBasis: nominal case, all boolean conditions are true
+	// Good data: minimum normal config, 1 job
+	behavior of "arePrecedingDependenciesValid"
+	it should "test nominal, min normal config" in {
+		val dependencyB = Dependency(Dependency.BEGIN_BEGIN, 1, 2)
+
+		val jobA = Job(Set(dependencyB), 6, 1)
+		val jobB = Job(Set(), 6, 2)
+
+		schedule = clearSchedule
+		appendJobToSchedule(jobA, schedule)
+		appendJobToSchedule(jobB, schedule)
+
+		val arePrecedingDependenciesValid = PrivateMethod[Boolean]('arePrecedingDependenciesValid)
+		val validityResult = SoftwarePlatform invokePrivate arePrecedingDependenciesValid(schedule, jobB)
+		assert(!validityResult)
+	}
+
+	// Structured Basis: first if condition is false
+	it should "test with valid preceding dependencies" in {
+		val arePrecedingDependenciesValid = PrivateMethod[Boolean]('arePrecedingDependenciesValid)
+		val validityResult = SoftwarePlatform invokePrivate arePrecedingDependenciesValid(schedule, job2)
+		assert(validityResult)
+	}
 }
 
 
