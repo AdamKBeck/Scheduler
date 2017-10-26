@@ -859,7 +859,140 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 		assert(bestSchedule.nonEmpty)
 	}
 
-	//
+	//bestValidOrdering test
+	// Structured Basis: nominal case, all boolean conditions true
+	// Good data: minimum config, schedule contains 1 job
+	behavior of "bestValidOrdering"
+	it should "test nominal, minimum config" in {
+		val schedule = clearSchedule
+		appendJobToSchedule(Job(Set(), 3, 1), schedule)
+
+		val job = Job(Set(), 5, 2)
+
+		val bestValidOrdering = PrivateMethod[ListBuffer[ListBuffer[Job]]]('bestValidOrdering)
+		val bestSchedule = SoftwarePlatform invokePrivate bestValidOrdering(job, schedule, 3)
+
+		val minSchedule = clearSchedule
+		appendJobToSchedule(Job(Set(), 3, 1), minSchedule)
+		insertJobToSchedule(job, minSchedule, 0)
+
+		assert(minSchedule == bestSchedule)
+	}
+
+	// Structured Basis: for loop false
+	// Bad data: Nil schedule
+	it should "test Nil schedule" in {
+		val schedule = clearSchedule
+
+		val job = Job(Set(), 3, 1)
+
+		val bestValidOrdering = PrivateMethod[ListBuffer[ListBuffer[Job]]]('bestValidOrdering)
+		val bestSchedule = SoftwarePlatform invokePrivate bestValidOrdering(job, schedule, 3)
+		assert(bestSchedule == clearSchedule)
+	}
+
+	// Structured Basis: first part of if is false
+	it should "test an always invalid ordering" in {
+		val schedule = clearSchedule
+		val dependencyA = Dependency(Dependency.BEGIN_BEGIN, 1, 3)
+		val dependencyB = Dependency(Dependency.BEGIN_BEGIN, 2, 1)
+
+		val jobA = Job(Set(dependencyA), 3, 1)
+		val jobB = Job(Set(dependencyB), 3, 2)
+		val jobC = Job(Set(), 3, 3)
+
+		appendJobToSchedule(jobB, schedule)
+		appendJobToSchedule(jobC, schedule)
+
+		val bestValidOrdering = PrivateMethod[ListBuffer[ListBuffer[Job]]]('bestValidOrdering)
+		val bestSchedule = SoftwarePlatform invokePrivate bestValidOrdering(jobA, schedule, 6)
+
+		assert(bestSchedule == clearSchedule)
+	}
+
+	// Structured Basis: second part of if is false
+	it should "test with an inValid insertion" in {
+		val schedule = clearSchedule
+		val dependencyA = Dependency(Dependency.BEGIN_BEGIN, 1, 3)
+
+		val jobA = Job(Set(dependencyA), 3, 1)
+		val jobB = Job(Set(), 3, 2)
+		val jobC = Job(Set(), 3, 3)
+
+		appendJobToSchedule(jobB, schedule)
+		appendJobToSchedule(jobC, schedule)
+
+		val bestValidOrdering = PrivateMethod[ListBuffer[ListBuffer[Job]]]('bestValidOrdering)
+		val bestSchedule = SoftwarePlatform invokePrivate bestValidOrdering(jobA, schedule, 6)
+
+
+		val minSchedule = clearSchedule
+		appendJobToSchedule(Job(Set(), 3, 2), minSchedule)
+		appendJobToSchedule(Job(Set(), 3, 3), minSchedule)
+		insertJobToSchedule(jobA, minSchedule, 1)
+
+		assert(bestSchedule == minSchedule)
+	}
+
+	// Structred Basis: second if is false
+	// Boundary duration > minDuration
+	it should "test with duration greater than minDuration" in {
+		val schedule = clearSchedule
+		appendJobToSchedule(Job(Set(), 3, 1), schedule)
+
+		val job = Job(Set(), 2, 2)
+
+		val bestValidOrdering = PrivateMethod[ListBuffer[ListBuffer[Job]]]('bestValidOrdering)
+		val bestSchedule = SoftwarePlatform invokePrivate bestValidOrdering(job, schedule, 3)
+
+		val minSchedule = clearSchedule
+		appendJobToSchedule(Job(Set(), 3, 1), minSchedule)
+		insertJobToSchedule(job, minSchedule, 0)
+
+		assert(minSchedule == bestSchedule)
+	}
+
+	// Boundary duration = minDuration
+	it should "test with duration equal to minDuration" in {
+		val schedule = clearSchedule
+		appendJobToSchedule(Job(Set(), 3, 1), schedule)
+
+		val job = Job(Set(), 0, 2)
+
+		val bestValidOrdering = PrivateMethod[ListBuffer[ListBuffer[Job]]]('bestValidOrdering)
+		val bestSchedule = SoftwarePlatform invokePrivate bestValidOrdering(job, schedule, 3)
+
+		val minSchedule = clearSchedule
+		appendJobToSchedule(Job(Set(), 3, 1), minSchedule)
+		insertJobToSchedule(job, minSchedule, 0)
+
+		assert(minSchedule == bestSchedule)
+	}
+
+	// Good data: max normal config, 100 jobs
+	it should "test with max normal config, 100 jobs" in {
+		val schedule = clearSchedule
+
+		appendJobToSchedule(Job(Set(), 3, 1), schedule)
+
+		for (i <- 2 to 99) {
+			insertJobToSchedule(Job(Set(), i, 0), schedule, 0)
+		}
+
+		val job = Job(Set(), 4, 2)
+
+		val bestValidOrdering = PrivateMethod[ListBuffer[ListBuffer[Job]]]('bestValidOrdering)
+		val bestSchedule = SoftwarePlatform invokePrivate bestValidOrdering(job, schedule, 99)
+
+		val jobListDuration = PrivateMethod[Int]('jobListDuration)
+		val duration = SoftwarePlatform invokePrivate jobListDuration(bestSchedule)
+		assert(duration == 99)
+	}
+
+	// estimateDeliveryTime testing
+	// Structured Basis: nominal case, all boolean values true
+	
+
 }
 
 
