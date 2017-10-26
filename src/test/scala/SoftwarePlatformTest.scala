@@ -170,6 +170,7 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	}
 
 	// Structured basis: first if condition false, second true
+	// Data flow
 	it should "test with no Begin-End dependency, invalid End-End dependency" in {
 		val dependency = Dependency(Dependency.END_END, 1, 2)
 
@@ -185,6 +186,7 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	}
 
 	// Structured basis: second if condition false, first true
+	// Data flow
 	it should "test with no End-End dependency, invalid Begin-End dependency" in {
 		val dependency = Dependency(Dependency.BEGIN_END, 1, 3)
 
@@ -203,6 +205,7 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	}
 
 	// Structured basis: both if conditions false
+	// Data flow
 	it should "test with no End-End dependency, no Begin-END dependency" in {
 		val isPrecedingDurationsValid = PrivateMethod[Boolean]('isPrecedingDurationsValid)
 		val validityResult = SoftwarePlatform invokePrivate isPrecedingDurationsValid(job2, job1, schedule, 0)
@@ -249,6 +252,7 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	}
 
 	// Structured Basis: first if condition true, second false
+	// Data flow
 	it should "test with no END_BEGIN, but a BEGIN_BEGIN dependency" in {
 		val dependencyB = Dependency(Dependency.BEGIN_BEGIN, 1, 2)
 
@@ -265,6 +269,7 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	}
 
 	// Structured Basis: first if condition false, second true
+	// Data flow
 	it should "test with no BEGIN_BEGIN, but a END_BEGIN dependency" in {
 		val dependencyB = Dependency(Dependency.END_BEGIN, 1, 2)
 
@@ -281,6 +286,7 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	}
 
 	// Structured Basis: both first if conditions false, invalid preceding durations
+	// Data flow
 	it should "test with no BEGIN_BEGIN or END_BEGIN, invalid preceding durations" in {
 		val dependencyB = Dependency(Dependency.END_END, 1, 2)
 
@@ -297,6 +303,7 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	}
 
 	// Structured Basis: both first if conditions false, valid preceding durations
+	// Data flow
 	it should "test with no BEGIN_BEGIN or END_BEGIN, valid preceding durations" in {
 		val isPrecedingDependencyValid = PrivateMethod[Boolean]('isPrecedingDependencyValid)
 		val validityResult = SoftwarePlatform invokePrivate isPrecedingDependencyValid(job2, job1, schedule, 0)
@@ -420,6 +427,7 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	}
 
 	// Structured Basis: second if: first condition true, second false
+	// Data flow
 	it should "test with END_BEGIN dependency on the job, no End_End" in {
 		val dependency = Dependency(Dependency.END_BEGIN, 1, 2)
 
@@ -436,6 +444,7 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	}
 
 	// Structured Basis: second if: first condition false, second true
+	// Data flow
 	it should "test with no END_BEGIN dependency on the job, invalid End_End" in {
 		val dependency = Dependency(Dependency.END_END, 1, 2)
 
@@ -452,6 +461,7 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	}
 
 	// Structured Basis: second if: first condition false, second false
+	// Data flow
 	it should "test with no END_BEGIN dependency on the job, no End_End" in {
 		val jobA = Job(Set(), 3, 1)
 		val jobB = Job(Set(), 6, 2)
@@ -507,6 +517,7 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	}
 
 	// Structured Basis: first condition false, second condition true
+	// Data flow
 	it should "test with valid parallel dependencies, invalid preceding dependnecies" in {
 		schedule = clearSchedule
 		val dependencyA = Dependency(Dependency.END_BEGIN, 1, 2)
@@ -525,6 +536,7 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	}
 
 	// Structured Basis: first condition true, second condition false
+	// Data flow
 	it should "test with invalid parallel dependencies, valid preceding dependnecies" in {
 		schedule = clearSchedule
 		val dependency = Dependency(Dependency.END_END, 3, 2)
@@ -544,6 +556,7 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 
 	// Structured Basis: if statement false
 	// Good data: min nominal case, a schedule of 1 job
+	// Data flow
 	it should "test with valid parallel dependencies, valid preceding dependencies" in {
 		schedule = clearSchedule
 		appendJobToSchedule(job1, schedule)
@@ -893,6 +906,7 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	}
 
 	// Structured Basis: first part of if is false
+	// Data flow
 	it should "test an always invalid ordering" in {
 		val schedule = clearSchedule
 		val dependencyA = Dependency(Dependency.BEGIN_BEGIN, 1, 3)
@@ -912,6 +926,7 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	}
 
 	// Structured Basis: second part of if is false
+	// Data flow
 	it should "test with an inValid insertion" in {
 		val schedule = clearSchedule
 		val dependencyA = Dependency(Dependency.BEGIN_BEGIN, 1, 3)
@@ -937,6 +952,7 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 
 	// Structred Basis: second if is false
 	// Boundary duration > minDuration
+	// Data flow
 	it should "test with duration greater than minDuration" in {
 		val schedule = clearSchedule
 		appendJobToSchedule(Job(Set(), 3, 1), schedule)
@@ -1044,7 +1060,6 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 	// Structured Basis, if statement false
 	// Good data: max config, 100 jobs
 	it should "test a non-circular Dependency max config list" in {
-		var list = List[Job](Job(Set(), 1, 1), Job(Set(), 3, 1))
 
 		val buffer = ListBuffer[Job]()
 
