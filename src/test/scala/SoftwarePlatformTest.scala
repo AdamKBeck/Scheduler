@@ -211,7 +211,80 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 		assert(validityResult)
 	}
 
+	// isPrecedingDependencyValid testing
+	// Structured Basis: nominal case, all boolean conditions are true
+	// Good data: minimum normal configuration, 2 jobs
+	behavior of "isPrecedingDependencyValid"
+	it should "test nominal, min normal config" in {
+		val dependencyA = Dependency(Dependency.END_BEGIN, 1, 2)
+		val dependencyB = Dependency(Dependency.BEGIN_BEGIN, 1, 2)
 
+		val jobA = Job(Set(dependencyA, dependencyB), 6, 1)
+		val jobB = Job(Set(), 6, 2)
+
+		schedule = clearSchedule
+		appendJobToSchedule(jobA, schedule)
+		appendJobToSchedule(jobB, schedule)
+
+		val isPrecedingDependencyValid = PrivateMethod[Boolean]('isPrecedingDependencyValid)
+		val validityResult = SoftwarePlatform invokePrivate isPrecedingDependencyValid(jobB, jobA, schedule, 0)
+		assert(!validityResult)
+	}
+
+	// Structured Basis: first if condition true, second false
+	it should "test with no END_BEGIN, but a BEGIN_BEGIN dependency" in {
+		val dependencyB = Dependency(Dependency.BEGIN_BEGIN, 1, 2)
+
+		val jobA = Job(Set(dependencyB), 6, 1)
+		val jobB = Job(Set(), 6, 2)
+
+		schedule = clearSchedule
+		appendJobToSchedule(jobA, schedule)
+		appendJobToSchedule(jobB, schedule)
+
+		val isPrecedingDependencyValid = PrivateMethod[Boolean]('isPrecedingDependencyValid)
+		val validityResult = SoftwarePlatform invokePrivate isPrecedingDependencyValid(jobB, jobA, schedule, 0)
+		assert(!validityResult)
+	}
+
+	// Structured Basis: first if condition false, second true
+	it should "test with no BEGIN_BEGIN, but a END_BEGIN dependency" in {
+		val dependencyB = Dependency(Dependency.END_BEGIN, 1, 2)
+
+		val jobA = Job(Set(dependencyB), 6, 1)
+		val jobB = Job(Set(), 6, 2)
+
+		schedule = clearSchedule
+		appendJobToSchedule(jobA, schedule)
+		appendJobToSchedule(jobB, schedule)
+
+		val isPrecedingDependencyValid = PrivateMethod[Boolean]('isPrecedingDependencyValid)
+		val validityResult = SoftwarePlatform invokePrivate isPrecedingDependencyValid(jobB, jobA, schedule, 0)
+		assert(!validityResult)
+	}
+
+	// Structured Basis: both first if conditions false, invalid preceding durations
+	it should "test with no BEGIN_BEGIN or END_BEGIN, invalid preceding durations" in {
+		val dependencyB = Dependency(Dependency.END_END, 1, 2)
+
+		val jobA = Job(Set(dependencyB), 6, 1)
+		val jobB = Job(Set(), 6, 2)
+
+		schedule = clearSchedule
+		appendJobToSchedule(jobA, schedule)
+		appendJobToSchedule(jobB, schedule)
+
+		val isPrecedingDependencyValid = PrivateMethod[Boolean]('isPrecedingDependencyValid)
+		val validityResult = SoftwarePlatform invokePrivate isPrecedingDependencyValid(jobB, jobA, schedule, 0)
+		assert(!validityResult)
+	}
+
+	// Structured Basis: both first if conditions false, valid preceding durations
+	it should "test with no BEGIN_BEGIN or END_BEGIN, valid preceding durations" in {
+		val isPrecedingDependencyValid = PrivateMethod[Boolean]('isPrecedingDependencyValid)
+		val validityResult = SoftwarePlatform invokePrivate isPrecedingDependencyValid(job2, job1, schedule, 0)
+		assert(validityResult)
+	}
 }
 
 
