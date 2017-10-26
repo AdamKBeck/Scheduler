@@ -52,7 +52,7 @@ object SoftwarePlatform {
 	/* Input: Job 'job', a job list of lists 'schedule', and the duration of the list 'scheduleDuration'
 	 * Output: Returns a job list of lists, the valid ordering of least duration of 'job' into 'schedule'
 	 */
-	def bestValidOrdering(job: Job, schedule: ListBuffer[ListBuffer[Job]], scheduleDuration: Int): ListBuffer[ListBuffer[Job]] = {
+	private def bestValidOrdering(job: Job, schedule: ListBuffer[ListBuffer[Job]], scheduleDuration: Int): ListBuffer[ListBuffer[Job]] = {
 		// maxOrdering <- d + j.duration // helpful for our min block below
 		var minDuration = scheduleDuration + job.duration // We set our running min Duration to the max possible duration to
 
@@ -88,7 +88,7 @@ object SoftwarePlatform {
 	/* Helper method for bestValidOrdering. Inserts job around specified index into a schedule.
 	 * Named as a function because it returns a schedule of least duration for the three cases of inserting around a slot.
 	 */
-	def bestValidInsertionAroundSlot(job: Job, schedule: ListBuffer[ListBuffer[Job]], index: Int): ListBuffer[ListBuffer[Job]] = {
+	private def bestValidInsertionAroundSlot(job: Job, schedule: ListBuffer[ListBuffer[Job]], index: Int): ListBuffer[ListBuffer[Job]] = {
 		// Create a list of lists containing just the job for inserting before and after
 		val listsOfJob = emptySchedule
 		listsOfJob += ListBuffer[Job]()
@@ -121,7 +121,7 @@ object SoftwarePlatform {
 	}
 
 	// Helper method for bestValidInsertionAroundSlot, finds the minimum duration schedule out of a list of schedules
-	def minimumDurationSchedule(schedules: List[ListBuffer[ListBuffer[Job]]]): ListBuffer[ListBuffer[Job]] = {
+	private def minimumDurationSchedule(schedules: List[ListBuffer[ListBuffer[Job]]]): ListBuffer[ListBuffer[Job]] = {
 		if (schedules.nonEmpty) {
 			var minDurationSchedule = schedules.head
 			var minDuration = jobListDuration(schedules.head)
@@ -144,7 +144,7 @@ object SoftwarePlatform {
 	/* Input: Job 'job', a set of assignments 'Jobs'
 	 * Output: Returns a set of jobs which forms a circular dependency
 	 */
-	def invalidDependentJobs(job: Job, jobs: List[Job]): List[Job] = {
+	private def invalidDependentJobs(job: Job, jobs: List[Job]): List[Job] = {
 		// Let l be a new list
 		val circularJobs = ListBuffer[Job]()
 
@@ -169,7 +169,7 @@ object SoftwarePlatform {
 	/* Input: A job list of list of jobs 'schedule'
 	 * Output: The duration of schedule
 	 */
-	def jobListDuration(schedule: ListBuffer[ListBuffer[Job]]): Int = {
+	private def jobListDuration(schedule: ListBuffer[ListBuffer[Job]]): Int = {
 		// totalDuration <- 0
 		var totalDuration = 0
 
@@ -194,7 +194,7 @@ object SoftwarePlatform {
 	/* Input: A job lists of lists 'schedule'
 	 * Output: Boolean whether or not 'schedule' has jobs which have valid dependencies on each other
 	 */
-	def isValid(schedule: ListBuffer[ListBuffer[Job]]): Boolean = {
+	private def isValid(schedule: ListBuffer[ListBuffer[Job]]): Boolean = {
 		var scheduleValidity = true // By default, an empty schedule is already valid
 
 		// for each l in L
