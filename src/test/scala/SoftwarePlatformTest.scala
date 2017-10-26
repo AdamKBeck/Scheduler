@@ -777,7 +777,7 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 		val buffer = ListBuffer[ListBuffer[ListBuffer[Job]]]()
 		buffer += clearSchedule
 		val job = Job(Set(), 0, 1)
-		appendJobToSchedule(job, buffer(0))
+		appendJobToSchedule(job, buffer.head)
 
 		for (i <- 1 to 20) {
 			buffer += clearSchedule
@@ -786,8 +786,80 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 
 		val minimumDurationSchedule = PrivateMethod[ListBuffer[ListBuffer[Job]]]('minimumDurationSchedule)
 		val list = SoftwarePlatform invokePrivate minimumDurationSchedule(buffer.toList)
-		assert(list(0)(0) == job)
+		assert(list.head.head == job)
 	}
+
+
+	// bestValidInsertionAroundSlot testing
+	// Structured Basis: Nominal case, all boolean conditions true
+	behavior of "bestValidInsertionAroundSlot"
+	it should "test nominal" in {
+		val dependency = Dependency(Dependency.END_BEGIN, 2, 3)
+
+		val jobA = Job(Set(dependency), 3, 1)
+		val jobB = Job(Set(), 4, 2)
+		val jobC = Job(Set(), 5, 3)
+		val jobD = Job(Set(), 3, 4)
+
+		schedule = clearSchedule
+		appendJobToSchedule(jobB, schedule)
+		insertJobToSchedule(jobC, schedule, 0)
+		appendJobToSchedule(jobD, schedule)
+
+		val bestValidInsertionAroundSlot = PrivateMethod[ListBuffer[ListBuffer[Job]]]('bestValidInsertionAroundSlot)
+		val bestSchedule = SoftwarePlatform invokePrivate bestValidInsertionAroundSlot(jobA, schedule, 1)
+		assert(bestSchedule == clearSchedule)
+	}
+
+	// Structured Basis: if statement false
+	// Good data: More than 2 jobs, not too mamy
+	it should "test with multiple valid schedules after insertion, expected normal config" in {
+
+		val jobA = Job(Set(), 3, 1)
+		val jobB = Job(Set(), 4, 2)
+		val jobC = Job(Set(), 5, 3)
+
+		schedule = clearSchedule
+		appendJobToSchedule(jobB, schedule)
+		appendJobToSchedule(jobC, schedule)
+
+		val bestValidInsertionAroundSlot = PrivateMethod[ListBuffer[ListBuffer[Job]]]('bestValidInsertionAroundSlot)
+		val bestSchedule = SoftwarePlatform invokePrivate bestValidInsertionAroundSlot(jobA, schedule, 0)
+
+		val bestInsertedSchedule = clearSchedule
+		appendJobToSchedule(jobB, bestInsertedSchedule)
+		appendJobToSchedule(jobC, bestInsertedSchedule)
+		insertJobToSchedule(jobA, bestInsertedSchedule, 0)
+
+		assert(bestSchedule == bestInsertedSchedule)
+	}
+
+	//Bad data: Nil schedule
+	it should "test with Nil schedule" in {
+		val dependency = Dependency(Dependency.END_BEGIN, 2, 3)
+
+		val jobA = Job(Set(dependency), 3, 1)
+		schedule = clearSchedule
+		schedule += ListBuffer[Job]()
+
+		val bestValidInsertionAroundSlot = PrivateMethod[ListBuffer[ListBuffer[Job]]]('bestValidInsertionAroundSlot)
+		val bestSchedule = SoftwarePlatform invokePrivate bestValidInsertionAroundSlot(jobA, schedule, 0)
+		assert(bestSchedule == clearSchedule)
+	}
+
+	// Good data: max normal configuration, 100 jobs
+	it should "test with max normal configuration: 100 jobs" in {
+		val jobA = Job(Set(), 3, 100)
+		for (i <- 0 to 99) {
+			val job = Job(Set(), 4, i)
+			appendJobToSchedule(job, schedule)
+		}
+		val bestValidInsertionAroundSlot = PrivateMethod[ListBuffer[ListBuffer[Job]]]('bestValidInsertionAroundSlot)
+		val bestSchedule = SoftwarePlatform invokePrivate bestValidInsertionAroundSlot(jobA, schedule, 0)
+		assert(bestSchedule.nonEmpty)
+	}
+
+	//
 }
 
 
