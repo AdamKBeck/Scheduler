@@ -403,11 +403,82 @@ class SoftwarePlatformTest extends FlatSpec with BeforeAndAfterEach with Private
 		assert(validityResult)
 	}
 
+	// areParallelDependenciesValid testing
+	// Structured Basis: nominal case, all coolean conditions are true
+	// Good data: min configuration, list of one job
+	behavior of "areParallelDependeneciesValid"
+	it should "test nominal, min normal configuration" in {
+		schedule = clearSchedule
+		appendJobToSchedule(job1, schedule)
 
+		val areParallelDependenciesValid = PrivateMethod[Boolean]('areParallelDependenciesValid)
+		val validityResult = SoftwarePlatform invokePrivate areParallelDependenciesValid(job1, ListBuffer(job1))
+		assert(validityResult)
+	}
 
+	// Structured Basis: second if: first condition true, second false
+	it should "test with END_BEGIN dependency on the job, no End_End" in {
+		val dependency = Dependency(Dependency.END_BEGIN, 1, 2)
 
+		val jobA = Job(Set(dependency), 6, 1)
+		val jobB = Job(Set(), 6, 2)
 
+		schedule = clearSchedule
+		appendJobToSchedule(jobA, schedule)
+		insertJobToSchedule(jobB, schedule, 0)
 
+		val areParallelDependenciesValid = PrivateMethod[Boolean]('areParallelDependenciesValid)
+		val validityResult = SoftwarePlatform invokePrivate areParallelDependenciesValid(jobB, ListBuffer(jobA))
+		assert(!validityResult)
+	}
+
+	// Structured Basis: second if: first condition false, second true
+	it should "test with no END_BEGIN dependency on the job, invalid End_End" in {
+		val dependency = Dependency(Dependency.END_END, 1, 2)
+
+		val jobA = Job(Set(dependency), 3, 1)
+		val jobB = Job(Set(), 6, 2)
+
+		schedule = clearSchedule
+		appendJobToSchedule(jobA, schedule)
+		insertJobToSchedule(jobB, schedule, 0)
+
+		val areParallelDependenciesValid = PrivateMethod[Boolean]('areParallelDependenciesValid)
+		val validityResult = SoftwarePlatform invokePrivate areParallelDependenciesValid(jobB, ListBuffer(jobA))
+		assert(!validityResult)
+	}
+
+	// Structured Basis: second if: first condition false, second false
+	it should "test with no END_BEGIN dependency on the job, no End_End" in {
+		val jobA = Job(Set(), 3, 1)
+		val jobB = Job(Set(), 6, 2)
+
+		schedule = clearSchedule
+		appendJobToSchedule(jobA, schedule)
+		insertJobToSchedule(jobB, schedule, 0)
+
+		val areParallelDependenciesValid = PrivateMethod[Boolean]('areParallelDependenciesValid)
+		val validityResult = SoftwarePlatform invokePrivate areParallelDependenciesValid(jobB, ListBuffer(jobA))
+		assert(validityResult)
+	}
+
+	// Bad data: empty list
+	it should "test with Nil jobList" in {
+		val areParallelDependenciesValid = PrivateMethod[Boolean]('areParallelDependenciesValid)
+		val validityResult = SoftwarePlatform invokePrivate areParallelDependenciesValid(job1, ListBuffer())
+		assert(validityResult)
+	}
+
+	// Good data: max normal config, 100 jobs
+	it should "test with max normal config" in {
+		val jobsList = ListBuffer[Job]()
+		for (i <- 1 to 100) {
+			jobsList += Job(Set(), 5, i)
+		}
+		val areParallelDependenciesValid = PrivateMethod[Boolean]('areParallelDependenciesValid)
+		val validityResult = SoftwarePlatform invokePrivate areParallelDependenciesValid(job1, jobsList)
+		assert(validityResult)
+	}
 }
 
 
